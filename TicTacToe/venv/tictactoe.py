@@ -67,3 +67,4 @@ while not game_over:
                     fin_juego = verificar_ganador()
                     if fin_juego:
                         print(f"El jugador {turno} ha ganado!!")
+                        game_over = True
