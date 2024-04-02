@@ -83,3 +83,4 @@ screen.onkeypress(izquierda, "Left")
 screen.onkeypress(derecha, "Right")
 
 while True:
+    screen.update()
