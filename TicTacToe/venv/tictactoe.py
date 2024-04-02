@@ -21,3 +21,4 @@ tablero = [['','',''],
            ['','','']]
 
 turno = 'X'
+game_over = False
