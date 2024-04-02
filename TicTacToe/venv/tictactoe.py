@@ -52,3 +52,4 @@ def verificar_ganador():
     return False
 
 while not game_over:
+    clock.tick(30)
