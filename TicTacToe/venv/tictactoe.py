@@ -69,3 +69,4 @@ while not game_over:
                         print(f"El jugador {turno} ha ganado!!")
                         game_over = True
                     turno = 'O' if turno == 'X' else 'X'
+    graficar_board()
