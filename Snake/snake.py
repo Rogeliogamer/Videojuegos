@@ -141,3 +141,10 @@ while True:
         segmentos[0].goto(x,y)
 
     mov()
+
+    #Colisiones cuerpo
+    for segmento in segmentos:
+        if segmento.distance(cabeza) < 20:
+            time.sleep(1)
+            cabeza.goto(0,0)
+            cabeza.direction = "stop"
