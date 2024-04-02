@@ -110,3 +110,10 @@ while True:
         x = random.randint(-280,280)
         y = random.randint(-280,280)
         comida.goto(x,y)
+
+        nuevo_segmento = turtle.Turtle()
+        nuevo_segmento.speed(0)
+        nuevo_segmento.shape("square")
+        nuevo_segmento.color("grey")
+        nuevo_segmento.penup()
+        segmentos.append(nuevo_segmento)
