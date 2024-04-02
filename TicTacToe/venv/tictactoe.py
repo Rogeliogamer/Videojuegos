@@ -11,3 +11,7 @@ equis = pygame.image.load('static/x.png')
 fondo = pygame.transform.scale(fondo, (450,450))
 circulo = pygame.transform.scale(circulo, (125,125))
 equis = pygame.transform.scale(equis, (125,125))
+
+coor = [[(40,50),(165,50),(290,50)],
+        [(40,175),(165,175),(290,175)],
+        [(40,300),(165,300),(290,300)]]
