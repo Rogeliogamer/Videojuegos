@@ -72,3 +72,5 @@ while not game_over:
 
     graficar_board()
     pygame.display.update()
+
+pygame.quit()
