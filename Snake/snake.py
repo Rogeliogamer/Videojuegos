@@ -31,3 +31,6 @@ comida.shape("circle")
 comida.color("orange")
 comida.penup()
 comida.goto(100,0)
+
+#Segmentos / cuerpo de la serpiente
+segmentos = []
