@@ -120,3 +120,6 @@ while True:
 
         #Aumentar marcador
         score += 10
+
+        if score > high_score:
+            high_score = score
