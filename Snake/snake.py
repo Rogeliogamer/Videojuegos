@@ -74,3 +74,10 @@ def mov():
     if cabeza.direction == "left":
         x = cabeza.xcor()
         cabeza.setx(x - 20)
+
+#Teclado
+screen.listen()
+screen.onkeypress(arriba, "Up")
+screen.onkeypress(abajo, "Down")
+screen.onkeypress(izquierda, "Left")
+screen.onkeypress(derecha, "Right")
