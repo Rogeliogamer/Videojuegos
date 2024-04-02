@@ -43,3 +43,17 @@ texto.penup()
 texto.hideturtle()
 texto.goto(0,260)
 texto.write("Score: 0        High Score: 0", align = "center", font = ("Courier", 24, "normal"))
+
+#Funciones
+def arriba():
+    if cabeza.direction != "down":
+        cabeza.direction = "up"
+def abajo():
+    if cabeza.direction != "up":
+        cabeza.direction = "down"
+def derecha():
+    if cabeza.direction != "left": 
+        cabeza.direction = "right"
+def izquierda():
+    if cabeza.direction != "rigth":
+        cabeza.direction = "left"
