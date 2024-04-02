@@ -97,3 +97,9 @@ while True:
 
         #Limpiar lista de segmentos
         segmentos.clear()
+
+        #Resetear marcador
+        score = 0
+        texto.clear()
+        texto.write("Score: {}      High Score: {}".format(score,high_score), 
+                    align = "center", font = ("Courier", 24, "normal"))
