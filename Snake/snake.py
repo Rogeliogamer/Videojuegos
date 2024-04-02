@@ -152,3 +152,6 @@ while True:
             #Esconder los segmentos
             for segmento in segmentos:
                 segmento.goto(1000,1000)
+
+            #Limpiar los elementos de la lista
+            segmentos.clear()
