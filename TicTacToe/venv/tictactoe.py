@@ -63,3 +63,4 @@ while not game_over:
                 fila = (mouseY - 50) //125
                 col = (mouseX - 40) //125
                 if tablero[fila][col] == '':
+                    tablero[fila][col] = turno
