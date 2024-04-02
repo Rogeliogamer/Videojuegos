@@ -23,3 +23,12 @@ tablero = [['','',''],
 turno = 'X'
 game_over = False
 clock = pygame.time.Clock()
+
+def graficar_board():
+    screen.blit(fondo, (0,0))
+    for fila in range(3):
+        for col in range(3):
+            if tablero[fila][col] == 'X':
+                dibujar_X(fila,col)
+            elif tablero[fila][col] == 'O':
+                dibujar_o(fila,col)
