@@ -32,3 +32,9 @@ def graficar_board():
                 dibujar_X(fila,col)
             elif tablero[fila][col] == 'O':
                 dibujar_o(fila,col)
+
+def dibujar_X(fila,col):
+    screen.blit(equis, coor[fila][col])
+
+def dibujar_o(fila,col):
+    screen.blit(circulo, coor[fila][col])
