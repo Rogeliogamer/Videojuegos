@@ -127,3 +127,17 @@ while True:
         texto.clear()
         texto.write("Score: {}      High Score: {}".format(score,high_score), 
                     align = "center", font = ("Courier", 24, "normal"))
+
+    #Mover el cuerpo de la serpiente
+    totalSegmentos = len(segmentos)
+    for index in range(totalSegmentos -1, 0, -1):
+        x = segmentos[index - 1].xcor()
+        y = segmentos[index - 1].ycor()
+        segmentos[index].goto(x,y)
+
+    if totalSegmentos > 0:
+        x = cabeza.xcor()
+        y = cabeza.ycor()
+        segmentos[0].goto(x,y)
+
+    mov()
