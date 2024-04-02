@@ -68,3 +68,4 @@ while not game_over:
                     if fin_juego:
                         print(f"El jugador {turno} ha ganado!!")
                         game_over = True
+                    turno = 'O' if turno == 'X' else 'X'
