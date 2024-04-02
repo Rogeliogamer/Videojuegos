@@ -22,3 +22,4 @@ tablero = [['','',''],
 
 turno = 'X'
 game_over = False
+clock = pygame.time.Clock()
