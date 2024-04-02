@@ -64,3 +64,4 @@ while not game_over:
                 col = (mouseX - 40) //125
                 if tablero[fila][col] == '':
                     tablero[fila][col] = turno
+                    fin_juego = verificar_ganador()
