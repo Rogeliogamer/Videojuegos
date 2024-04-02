@@ -53,3 +53,5 @@ def verificar_ganador():
 
 while not game_over:
     clock.tick(30)
+
+    for event in pygame.event.get():
