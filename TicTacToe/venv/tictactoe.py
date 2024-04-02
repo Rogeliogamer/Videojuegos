@@ -38,3 +38,15 @@ def dibujar_X(fila,col):
 
 def dibujar_o(fila,col):
     screen.blit(circulo, coor[fila][col])
+
+def verificar_ganador():
+    for i in range(3):
+        if tablero[i][0] == tablero[i][1] == tablero[i][2] != '':
+            return True
+        if tablero[0][i] == tablero[1][i] == tablero[2][i] != '':
+            return True
+    if tablero[0][0] == tablero[1][1] == tablero[2][2] != '':
+        return True
+    if tablero[0][2] == tablero[1][1] == tablero[2][0] != '':
+        return True
+    return False
