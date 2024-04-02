@@ -58,3 +58,4 @@ while not game_over:
         if event.type == pygame.QUIT:
             game_over = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouseX, mouseY = event.pos
