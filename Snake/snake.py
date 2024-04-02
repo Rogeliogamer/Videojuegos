@@ -23,3 +23,11 @@ cabeza.color("white")
 cabeza.penup()
 cabeza.goto(0,0)
 cabeza.direction = "stop"
+
+#Comida
+comida = turtle.Turtle()
+comida.speed(0)
+comida.shape("circle")
+comida.color("orange")
+comida.penup()
+comida.goto(100,0)
