@@ -59,3 +59,4 @@ while not game_over:
             game_over = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouseX, mouseY = event.pos
+            if (mouseX >= 40 and mouseX < 415) and (mouseY >= 50 and mouseY < 425):
