@@ -123,3 +123,7 @@ while True:
 
         if score > high_score:
             high_score = score
+
+        texto.clear()
+        texto.write("Score: {}      High Score: {}".format(score,high_score), 
+                    align = "center", font = ("Courier", 24, "normal"))
