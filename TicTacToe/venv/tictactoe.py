@@ -60,3 +60,5 @@ while not game_over:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouseX, mouseY = event.pos
             if (mouseX >= 40 and mouseX < 415) and (mouseY >= 50 and mouseY < 425):
+                fila = (mouseY - 50) //125
+                col = (mouseX - 40) //125
