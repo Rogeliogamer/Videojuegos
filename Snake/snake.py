@@ -94,3 +94,6 @@ while True:
         #Esconder los segmentos
         for segmento in segmentos:
             segmento.goto(1000,1000)
+
+        #Limpiar lista de segmentos
+        segmentos.clear()
