@@ -117,3 +117,6 @@ while True:
         nuevo_segmento.color("grey")
         nuevo_segmento.penup()
         segmentos.append(nuevo_segmento)
+
+        #Aumentar marcador
+        score += 10
