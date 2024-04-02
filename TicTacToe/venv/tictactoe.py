@@ -66,3 +66,4 @@ while not game_over:
                     tablero[fila][col] = turno
                     fin_juego = verificar_ganador()
                     if fin_juego:
+                        print(f"El jugador {turno} ha ganado!!")
