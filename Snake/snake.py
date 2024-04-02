@@ -84,3 +84,9 @@ screen.onkeypress(derecha, "Right")
 
 while True:
     screen.update()
+
+    #Colisiones bordes
+    if (cabeza.xcor() > 280 or cabeza.xcor() < -280 or cabeza.ycor() > 280 or cabeza.ycor() < -280):
+        time.sleep(1)
+        cabeza.goto(0,0)
+        cabeza.direction = "stop"
