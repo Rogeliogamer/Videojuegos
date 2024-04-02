@@ -34,3 +34,12 @@ comida.goto(100,0)
 
 #Segmentos / cuerpo de la serpiente
 segmentos = []
+
+#Texto
+texto = turtle.Turtle()
+texto.speed(0)
+texto.color("white")
+texto.penup()
+texto.hideturtle()
+texto.goto(0,260)
+texto.write("Score: 0        High Score: 0", align = "center", font = ("Courier", 24, "normal"))
