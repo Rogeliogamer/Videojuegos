@@ -106,3 +106,7 @@ while True:
 
     #Colisiones con la comida
     if cabeza.distance(comida) < 20:
+        #Mover la comida a posicion random
+        x = random.randint(-280,280)
+        y = random.randint(-280,280)
+        comida.goto(x,y)
