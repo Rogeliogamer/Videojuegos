@@ -148,3 +148,7 @@ while True:
             time.sleep(1)
             cabeza.goto(0,0)
             cabeza.direction = "stop"
+
+            #Esconder los segmentos
+            for segmento in segmentos:
+                segmento.goto(1000,1000)
