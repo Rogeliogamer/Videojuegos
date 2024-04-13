@@ -68,3 +68,7 @@ int main(){
         }
     }
 }
+
+//Funcion para jugar partida
+void JugarPartida(){
+}
