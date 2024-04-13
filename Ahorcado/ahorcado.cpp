@@ -92,5 +92,8 @@ void JugarPartida(){
 
         //Cuerpo
         Dibujar();
+
+        //Letras falladas
+        cout<<"Fallos: "<<letrasFalladas;
     }
 }
