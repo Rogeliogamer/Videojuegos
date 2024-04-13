@@ -166,4 +166,7 @@ void JugarPartida(){
 
     //Cuerpo
     Dibujar();
+
+    //Palabra completa
+    cout<<"Palabra: "<<palabras[nA]<<endl;
 }
