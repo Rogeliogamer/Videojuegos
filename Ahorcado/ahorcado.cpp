@@ -152,6 +152,9 @@ void JugarPartida(){
 
             //Guardar caracter
             cin>>eleccion;
+
+            //Salir de la funcion
+            return;
         }
     }
 }
