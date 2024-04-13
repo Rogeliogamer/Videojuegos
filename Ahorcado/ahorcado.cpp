@@ -157,4 +157,7 @@ void JugarPartida(){
             return;
         }
     }
+
+    //Limpia la pantalla
+    LimpiarPantalla();
 }
