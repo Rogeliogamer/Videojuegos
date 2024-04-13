@@ -52,5 +52,19 @@ int main(){
 
         //Guarda eleccion
         cin>>eleccion;
+
+        //Eleccion del menu
+        switch(eleccion){
+            //Juego
+            case '1':
+                //Partida de juego
+                JugarPartida();
+                break;
+            //Salir
+            case '2':
+                //Salir
+                return 0;
+                break;
+        }
     }
 }
