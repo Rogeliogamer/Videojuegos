@@ -95,5 +95,8 @@ void JugarPartida(){
 
         //Letras falladas
         cout<<"Fallos: "<<letrasFalladas;
+
+        //Progreso de juego
+        cout<<"    Progreso: "<<palabra<<endl;
     }
 }
