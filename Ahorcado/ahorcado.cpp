@@ -43,5 +43,11 @@ int main(){
 
         //Limpiar la pantalla
         LimpiarPantalla();
+
+        //Menu del juego
+        cout<<"\t::::MENU::::"<<endl;
+        cout<<"1) JugarPartida."<<endl;
+        cout<<"2) Salir."<<endl;
+        cout<<"Eleccion: ";
     }
 }
