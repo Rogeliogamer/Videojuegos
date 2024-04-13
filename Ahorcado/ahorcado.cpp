@@ -238,5 +238,16 @@ void Dibujar(){
             cout<<"  |"<<endl;
             cout<<" ---"<<endl;
             break;
+        //Cuerpo completo
+        case 0:
+            cout<<"  ........"<<endl;
+            cout<<"  |      |"<<endl;
+            cout<<"  |      O"<<endl;
+            cout<<"  |     /|\\"<<endl;
+            cout<<"  |     /|\\"<<endl;
+            cout<<"  |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<" ---"<<endl;
+            break;
     }
 }
