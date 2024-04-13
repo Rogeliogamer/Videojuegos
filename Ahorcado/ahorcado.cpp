@@ -125,5 +125,12 @@ void JugarPartida(){
             //Letras falladas
             letrasFalladas += eleccion;
         }
+
+        //Palabra se completo
+        completa = true;
+        for(int i = 0; i < (int)palabra.size(); i++){
+        }
+        if(completa){
+        }
     }
 }
