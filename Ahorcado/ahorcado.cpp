@@ -89,5 +89,8 @@ void JugarPartida(){
 
         //Titulo
         cout<<"\t::: A H O R C A D O :::"<<endl;
+
+        //Cuerpo
+        Dibujar();
     }
 }
