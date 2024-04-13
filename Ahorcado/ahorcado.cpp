@@ -71,4 +71,6 @@ int main(){
 
 //Funcion para jugar partida
 void JugarPartida(){
+    //Generar semilla
+    srand((int)time(NULL));
 }
