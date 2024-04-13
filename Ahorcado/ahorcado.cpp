@@ -84,5 +84,7 @@ void JugarPartida(){
 
     //Partida en curso
     while(vida > 0){
+        //Limpiar pantalla
+        LimpiarPantalla();
     }
 }
