@@ -146,6 +146,9 @@ void JugarPartida(){
 
             //Palabra completada
             cout<<"Palabra: "<<palabras[nA]<<endl;
+
+            //Mensaje ganador e ingese un caracter para continuar
+            cout<<"Ganaste. Ingresa un caracter para continuar: ";
         }
     }
 }
