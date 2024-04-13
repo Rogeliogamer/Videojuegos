@@ -251,3 +251,7 @@ void Dibujar(){
             break;
     }
 }
+
+//Funcion limpiar la pantalla
+void LimpiarPantalla(){
+}
