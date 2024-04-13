@@ -101,5 +101,8 @@ void JugarPartida(){
 
         //Ingresa letra
         cout<<"Ingrese una letra(minuscula): ";
+
+        //Guardar letra
+        cin>>eleccion;
     }
 }
