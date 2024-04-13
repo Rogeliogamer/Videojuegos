@@ -37,5 +37,8 @@ int main(){
 
         //Sin palabra de juego
         palabra = "";
+
+        //Sin letras falladas
+        letrasFalladas = "";
     }
 }
