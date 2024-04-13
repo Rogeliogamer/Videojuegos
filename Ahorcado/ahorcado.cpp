@@ -34,5 +34,8 @@ int main(){
     while(true){
         //vida del juego
         vida = 6;
+
+        //Sin palabra de juego
+        palabra = "";
     }
 }
