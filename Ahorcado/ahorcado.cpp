@@ -183,5 +183,16 @@ void JugarPartida(){
 //Funcion del cuerpo
 void Dibujar(){
     switch(vida){
+        //Sin cuerpo
+        case 6:
+            cout<<"  ........"<<endl;
+            cout<<"  |      |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<" ---"<<endl;
+            break;
     }
 }
