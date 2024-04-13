@@ -32,5 +32,7 @@ bool completa;
 int main(){
     //Menu
     while(true){
+        //vida del juego
+        vida = 6;
     }
 }
