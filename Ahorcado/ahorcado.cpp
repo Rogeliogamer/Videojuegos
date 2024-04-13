@@ -107,5 +107,15 @@ void JugarPartida(){
 
         //Letra no es correcta
         correcta = false;
+
+        //Encontrar si la letra forma parte de la palabra
+        for(int i = 0; i < (int)palabras[nA].size(); i++){
+            if(palabras[nA][i] == eleccion){
+                //Letra de la palabra es igual a la letra dada
+                palabra[i] = eleccion;
+                //Letra es correcta
+                correcta = true;
+            }
+        }
     }
 }
