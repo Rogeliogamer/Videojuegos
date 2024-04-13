@@ -30,4 +30,7 @@ bool completa;
 
 //Metodo principal
 int main(){
+    //Menu
+    while(true){
+    }
 }
