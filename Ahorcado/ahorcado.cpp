@@ -4,3 +4,8 @@
 
 // La siguiente línea indica que se utilizarán todos los elementos del espacio de nombres std
 using namespace std;
+
+//Funciones
+void LimpiarPantalla();
+void JugarPartida();
+void Dibujar();
