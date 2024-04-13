@@ -254,4 +254,8 @@ void Dibujar(){
 
 //Funcion limpiar la pantalla
 void LimpiarPantalla(){
+    //limpiar pantalla para windows
+    if(system("cls") == -1){
+        cout<<"Error al borrar la pantalla.";
+    }
 }
