@@ -137,6 +137,9 @@ void JugarPartida(){
         if(completa){
             //Limpiar la pantalla
             LimpiarPantalla();
+
+            //Titulo
+            cout<<"\t::: A H O R C A D O :::"<<endl;
         }
     }
 }
