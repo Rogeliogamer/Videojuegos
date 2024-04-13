@@ -216,5 +216,16 @@ void Dibujar(){
             cout<<"  |"<<endl;
             cout<<" ---"<<endl;
             break;
+        //cabeza, torzo y brazo derecho
+        case 3:
+            cout<<"  ........"<<endl;
+            cout<<"  |      |"<<endl;
+            cout<<"  |      O"<<endl;
+            cout<<"  |     /|"<<endl;
+            cout<<"  |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<" ---"<<endl;
+            break;
     }
 }
