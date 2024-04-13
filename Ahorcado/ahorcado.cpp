@@ -98,5 +98,8 @@ void JugarPartida(){
 
         //Progreso de juego
         cout<<"    Progreso: "<<palabra<<endl;
+
+        //Ingresa letra
+        cout<<"Ingrese una letra(minuscula): ";
     }
 }
