@@ -40,5 +40,8 @@ int main(){
 
         //Sin letras falladas
         letrasFalladas = "";
+
+        //Limpiar la pantalla
+        LimpiarPantalla();
     }
 }
