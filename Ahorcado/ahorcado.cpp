@@ -9,3 +9,21 @@ using namespace std;
 void LimpiarPantalla();
 void JugarPartida();
 void Dibujar();
+
+//Variables
+//Variable para elegir opcion del menu
+char eleccion;
+//Palabras del juego
+string palabras[] = {"monitor","microfono","televisor","telefono","caja","fibron","teclado","pc","collar","manzana"};
+//Palabra a jugar
+string palabra;
+//Letras falladas
+string letrasFalladas;
+//Numero aleatorio
+int nA;
+//Vida del jugador
+int vida;
+//Letra correcta
+bool correcta;
+//Palabra se completo
+bool completa;
