@@ -73,4 +73,7 @@ int main(){
 void JugarPartida(){
     //Generar semilla
     srand((int)time(NULL));
+
+    //Generar numero a partir de la cantidad de palabras
+    nA = rand()%10;
 }
