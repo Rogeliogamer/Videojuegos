@@ -172,4 +172,7 @@ void JugarPartida(){
 
     //Mensaje perdedor e ingese un caracter para continuar
     cout<<"Perdiste. Ingresa un caracter para continuar: ";
+
+    //Guardar caracter
+    cin>>eleccion;
 }
