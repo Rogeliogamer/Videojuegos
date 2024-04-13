@@ -49,5 +49,8 @@ int main(){
         cout<<"1) JugarPartida."<<endl;
         cout<<"2) Salir."<<endl;
         cout<<"Eleccion: ";
+
+        //Guarda eleccion
+        cin>>eleccion;
     }
 }
