@@ -76,4 +76,9 @@ void JugarPartida(){
 
     //Generar numero a partir de la cantidad de palabras
     nA = rand()%10;
+
+    //Tamaño de la palabra
+    for(int i = 0; i < (int)palabras[nA].size(); i++){
+        palabra += "-";
+    }
 }
