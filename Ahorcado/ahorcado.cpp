@@ -27,3 +27,7 @@ int vida;
 bool correcta;
 //Palabra se completo
 bool completa;
+
+//Metodo principal
+int main(){
+}
