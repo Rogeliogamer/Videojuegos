@@ -179,3 +179,9 @@ void JugarPartida(){
     //Salir de la funcion
     return;
 }
+
+//Funcion del cuerpo
+void Dibujar(){
+    switch(vida){
+    }
+}
