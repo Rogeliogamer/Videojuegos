@@ -227,5 +227,6 @@ void Dibujar(){
             cout<<"  |"<<endl;
             cout<<" ---"<<endl;
             break;
+        
     }
 }
