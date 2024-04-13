@@ -129,6 +129,10 @@ void JugarPartida(){
         //Palabra se completo
         completa = true;
         for(int i = 0; i < (int)palabra.size(); i++){
+            //Palabra no se completo
+            if(palabra[i] == '-'){
+                completa = false;
+            }
         }
         if(completa){
         }
