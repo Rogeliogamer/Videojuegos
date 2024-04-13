@@ -169,4 +169,7 @@ void JugarPartida(){
 
     //Palabra completa
     cout<<"Palabra: "<<palabras[nA]<<endl;
+
+    //Mensaje perdedor e ingese un caracter para continuar
+    cout<<"Perdiste. Ingresa un caracter para continuar: ";
 }
