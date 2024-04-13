@@ -194,5 +194,16 @@ void Dibujar(){
             cout<<"  |"<<endl;
             cout<<" ---"<<endl;
             break;
+        //Cabeza del cuerpo
+        case 5:
+            cout<<"  ........"<<endl;
+            cout<<"  |      |"<<endl;
+            cout<<"  |      O"<<endl;
+            cout<<"  |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<"  |"<<endl;
+            cout<<" ---"<<endl;
+            break;
     }
 }
