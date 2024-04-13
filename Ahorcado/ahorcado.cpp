@@ -135,6 +135,8 @@ void JugarPartida(){
             }
         }
         if(completa){
+            //Limpiar la pantalla
+            LimpiarPantalla();
         }
     }
 }
