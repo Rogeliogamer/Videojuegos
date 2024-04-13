@@ -81,4 +81,8 @@ void JugarPartida(){
     for(int i = 0; i < (int)palabras[nA].size(); i++){
         palabra += "-";
     }
+
+    //Partida en curso
+    while(vida > 0){
+    }
 }
