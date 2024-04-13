@@ -117,5 +117,13 @@ void JugarPartida(){
                 correcta = true;
             }
         }
+
+        //Letra no es correcta
+        if(!correcta){
+            //Pierde una vida
+            vida--;
+            //Letras falladas
+            letrasFalladas += eleccion;
+        }
     }
 }
