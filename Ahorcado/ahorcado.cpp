@@ -149,6 +149,9 @@ void JugarPartida(){
 
             //Mensaje ganador e ingese un caracter para continuar
             cout<<"Ganaste. Ingresa un caracter para continuar: ";
+
+            //Guardar caracter
+            cin>>eleccion;
         }
     }
 }
