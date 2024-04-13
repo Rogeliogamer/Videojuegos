@@ -104,5 +104,8 @@ void JugarPartida(){
 
         //Guardar letra
         cin>>eleccion;
+
+        //Letra no es correcta
+        correcta = false;
     }
 }
