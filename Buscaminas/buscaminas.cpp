@@ -97,6 +97,11 @@ void JugarPartida(){
     while(ComprobarCasillas()){
         //Mostrar tablero
         MostrarTablero(false);
+        //Opciones del usuario
+        cout<<"\n1) Descubrir Casilla"<<endl;
+        cout<<"2) Marcar Casilla"<<endl;
+        cout<<"3) Desmarcar Casilla"<<endl;
+        cout<<"Eleccion: ";
         int retorno;
         switch (eleccion){
         }
