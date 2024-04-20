@@ -280,6 +280,8 @@ int DescubrirCasilla(){
             return 2;
             break;
         default:
+            //Mensaje casilla descubierta
+            cout<<"Esa casilla ya fue descubierta. Ingrese OK: ";
             break;
     }
     return 0;
