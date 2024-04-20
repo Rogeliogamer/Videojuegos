@@ -80,4 +80,6 @@ void Configuracion(){
     cin>>tamTablero[0]>>tamTablero[1];
     //Ingresa la cantidad de minas
     cout<<"Ingrese la cantidad de minas: ";
+    //Guardar cantidad de minas
+    cin>>cantMinas;
 }
