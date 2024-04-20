@@ -291,4 +291,6 @@ int DescubrirCasilla(){
 
 //Función llenar tablero
 void LlenarTablero(){
+    //Semilla nueva
+    srand(time(NULL));
 }
