@@ -70,4 +70,6 @@ void LimpiarPantalla(){
 
 //Funcion Configuración
 void Configuracion(){
+    //Limpiar pantalla
+    LimpiarPantalla();
 }
