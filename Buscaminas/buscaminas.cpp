@@ -18,7 +18,7 @@ void VaciarSector(int y, int x);
 vector<vector<int>> tablero;
 
 //Variables
-//Eleccion del menu
+//Elección del menú
 char eleccion;
 //Tamaño del tablero
 vector<int> tamTablero(2);
@@ -31,7 +31,7 @@ bool tableroConBombas = false;
 //Vecinos bombas
 vector<vector<int>> operaciones = {{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1}};
 
-//Metodo principal
+//Método principal
 int main(){
     while(true){
         //Limpiar pantalla
@@ -42,13 +42,13 @@ int main(){
         cout<<"1) Jugar"<<endl;
         cout<<"2) Salir"<<endl;
         cout<<"Elección: ";
-        //Guardar elección del menu
+        //Guardar elección del menú
         cin>>eleccion;
         //Instrucciones de la opción
         switch(eleccion){
             //Partida
             case '1':
-                //Funcion de configuración
+                //Función de configuración
                 Configuracion();
                 //Jugar partida
                 JugarPartida();
@@ -62,15 +62,15 @@ int main(){
     return 0;
 }
 
-//Funcion limpiar pantalla
+//Función limpiar pantalla
 void LimpiarPantalla(){
-    //Limpiar pantalla para windows
+    //Limpiar pantalla para Windows
     if(system("cls") == -1){
         cout<<"Error al borrar pantalla"<<endl;
     }
 }
 
-//Funcion Configuración
+//Función configuración
 void Configuracion(){
     //Limpiar pantalla
     LimpiarPantalla();
@@ -84,7 +84,7 @@ void Configuracion(){
     cout<<"Ingrese la cantidad de minas: ";
     //Guardar cantidad de minas
     cin>>cantMinas;
-    //Redimencionar tablero
+    //Redimensionar tablero
     tablero.resize(tamTablero[0],(vector<int>(tamTablero[1])));
     for(int i = 0; i < tamTablero[0]; i++){
         for(int j = 0; j < tamTablero[1]; j++){
@@ -93,7 +93,7 @@ void Configuracion(){
     }
 }
 
-//Funcion jugar partida
+//Función jugar partida
 void JugarPartida(){
     tableroConBombas = false;
     while(ComprobarCasillas()){
@@ -109,12 +109,12 @@ void JugarPartida(){
         int retorno;
         switch (eleccion){
             case '1':
-                //Perdir posición
+                //Pedir posición
                 cout<<"Ingrese la posicion de la casilla a descubrir: ";
                 //Guardar posición
                 cin>>posCasilla[0]>>posCasilla[1];
                 retorno = DescubrirCasilla();
-                //Perdio al descubrir casilla
+                //Perdió al descubrir casilla
                 if(retorno == -1){
                     return;
                 }else if(retorno == 2 && tableroConBombas){
@@ -165,7 +165,7 @@ void JugarPartida(){
     cin>>eleccion;
 }
 
-//Funcion comprobar casillas
+//Función comprobar casillas
 bool ComprobarCasillas(){
     for(int i = 0; i < tamTablero[0]; i++){
         for(int j = 0; j < tamTablero[1]; j++){
@@ -178,7 +178,7 @@ bool ComprobarCasillas(){
     return false;
 }
 
-//Funcion mostrar tablero
+//Función mostrar tablero
 void MostrarTablero(bool mostrarBombas){
     //Limpiar pantalla
     LimpiarPantalla();
@@ -299,7 +299,7 @@ void LlenarTablero(){
         //Coordenadas
         int x,y;
         do{
-            //Numero aleatorios
+            //Números aleatorios 
             y = rand() % tamTablero[0];
             x = rand() % tamTablero[1];
         }while(tablero[y][x] == 0 || tablero[y][x] == 10);
@@ -308,7 +308,7 @@ void LlenarTablero(){
     }
 }
 
-//Funcion vaciar sector
+//Función vaciar sector
 void VaciarSector(int y, int x){
     //Contador
     int cont = 0;
