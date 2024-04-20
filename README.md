@@ -5,3 +5,4 @@ Desarrollo de videojuegos básicos en diferentes lenguajes
 * Snake
 ## C++
 * Ahorcado
+* Buscaminas
