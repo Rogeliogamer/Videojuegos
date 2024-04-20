@@ -310,4 +310,28 @@ void LlenarTablero(){
 void VaciarSector(int y, int x){
     //Contador
     int cont = 0;
+    for(int i = 0; i < 8; i++){
+        if(y + operaciones[i][0] >= 0 && y+ operaciones[i][0] < tamTablero[0]){
+            if(x+ operaciones[i][1] >= 0 && x + operaciones[i][1] < tamTablero[1]){
+                if(tablero[y+operaciones[i][0]][x+operaciones[i][1]] == 10 || tablero[y+operaciones[i][0]][x+operaciones[i][1]] == 1011){
+                    cont++;
+                }
+            }
+        }
+    }
+    if(cont == 0){
+        tablero[y][x] = 0;
+        for(int i = 0; i < 8; i++){
+            if(y + operaciones[i][0] >= 0 && y+ operaciones[i][0] < tamTablero[0]){
+                if(x+ operaciones[i][1] >= 0 && x + operaciones[i][1] < tamTablero[1]){
+                    if(tablero[y+operaciones[i][0]][x+operaciones[i][1]] == -1){
+                        VaciarSector(y+operaciones[i][0],x+operaciones[i][1]);
+                    }
+                }
+            }
+        }
+    }else{
+        tablero[y][x] = cont;
+        return;
+    }
 }
