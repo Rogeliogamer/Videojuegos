@@ -136,6 +136,13 @@ void JugarPartida(){
             case '2':
                 //Pedir posición
                 cout<<"Ingrese la posicion de la casilla a marcar: ";
+                //Guardar posición
+                cin>>posCasilla[0]>>posCasilla[1];
+                if(tablero[posCasilla[0]][posCasilla[1]] == 10){
+                    tablero[posCasilla[0]][posCasilla[1]] = 1011;
+                }else if(tablero[posCasilla[0]][posCasilla[1]] == -1){
+                    tablero[posCasilla[0]][posCasilla[1]] = 11;
+                }
                 break;
             case '3':
                 break;
