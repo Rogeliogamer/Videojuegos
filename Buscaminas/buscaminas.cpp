@@ -72,4 +72,6 @@ void LimpiarPantalla(){
 void Configuracion(){
     //Limpiar pantalla
     LimpiarPantalla();
+    //Titulo
+    cout<<"::::CONFIGURACION::::"<<endl;
 }
