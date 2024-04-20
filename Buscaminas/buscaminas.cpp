@@ -95,6 +95,8 @@ void Configuracion(){
 void JugarPartida(){
     tableroConBombas = false;
     while(ComprobarCasillas()){
+        //Mostrar tablero
+        MostrarTablero(false);
         int retorno;
         switch (eleccion){
         }
