@@ -258,6 +258,8 @@ int DescubrirCasilla(){
             cin>>eleccion;
             break;
         case 10:
+            //Mostrar tablero
+            MostrarTablero(true);
             return -1;
             break;
         case -1:
