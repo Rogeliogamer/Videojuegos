@@ -28,3 +28,9 @@ int cantMinas = 0;
 bool tableroConBombas = false;
 //Vecinos bombas
 vector<vector<int>> operaciones = {{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1}};
+
+//Metodo principal
+int main(){
+    while(true){
+    }
+}
