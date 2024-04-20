@@ -107,6 +107,8 @@ void JugarPartida(){
         int retorno;
         switch (eleccion){
             case '1':
+                //Perdir posición
+                cout<<"Ingrese la posicion de la casilla a descubrir: ";
                 break;
             case '2':
                 break;
