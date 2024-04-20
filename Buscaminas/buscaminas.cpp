@@ -32,5 +32,7 @@ vector<vector<int>> operaciones = {{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1
 //Metodo principal
 int main(){
     while(true){
+        //Limpiar pantalla
+        LimpiarPantalla();
     }
 }
