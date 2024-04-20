@@ -252,6 +252,8 @@ int DescubrirCasilla(){
     switch(tablero[posCasilla[0]][posCasilla[1]]){
         case 11:
         case 1011:
+            //Mensaje de casilla marcada
+            cout<<"Casilla marcada, no es posible descubrirla. Ingrese OK: ";
             break;
         case 10:
             return -1;
