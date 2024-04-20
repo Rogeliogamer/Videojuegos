@@ -162,3 +162,16 @@ void JugarPartida(){
     //Guardar OK
     cin>>eleccion;
 }
+
+//Funcion comprobar casillas
+bool ComprobarCasillas(){
+    for(int i = 0; i < tamTablero[0]; i++){
+        for(int j = 0; j < tamTablero[1]; j++){
+            cout<<tablero[i][j]<<endl;
+            if(tablero[i][j] == -1){
+                return true;
+            }
+        }
+    }
+    return false;
+}
