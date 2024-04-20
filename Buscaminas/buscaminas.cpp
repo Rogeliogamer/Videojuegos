@@ -175,3 +175,7 @@ bool ComprobarCasillas(){
     }
     return false;
 }
+
+//Funcion mostrar tablero
+void MostrarTablero(bool mostrarBombas){
+}
