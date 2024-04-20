@@ -297,6 +297,9 @@ void LlenarTablero(){
         //Coordenadas
         int x,y;
         do{
+            //Numero aleatorios
+            y = rand() % tamTablero[0];
+            x = rand() % tamTablero[1];
         }while(tablero[y][x] == 0 || tablero[y][x] == 10);
     }
 }
