@@ -147,6 +147,13 @@ void JugarPartida(){
             case '3':
                 //Pedir posición
                 cout<<"Ingrese la posicion de la casilla a desmarcar: ";
+                //Guardar posición
+                cin>>posCasilla[0]>>posCasilla[1];
+                if(tablero[posCasilla[0]][posCasilla[1]] == 11){
+                    tablero[posCasilla[0]][posCasilla[1]] = -1;
+                }else if(tablero[posCasilla[0]][posCasilla[1]] == 1011){
+                    tablero[posCasilla[0]][posCasilla[1]] = 10;
+                }
                 break;
         }
     }
