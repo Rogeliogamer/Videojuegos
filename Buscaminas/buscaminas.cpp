@@ -308,4 +308,6 @@ void LlenarTablero(){
 
 //Funcion vaciar sector
 void VaciarSector(int y, int x){
+    //Contador
+    int cont = 0;
 }
