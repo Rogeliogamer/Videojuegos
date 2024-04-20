@@ -157,4 +157,6 @@ void JugarPartida(){
                 break;
         }
     }
+    //Mensaje ganador
+    cout<<"\n 🍾🥳 FELICITACIONES HAS GANADO 🥳🍾 Ingrese ok para continuar: ";
 }
