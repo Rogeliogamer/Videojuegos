@@ -288,3 +288,7 @@ int DescubrirCasilla(){
     }
     return 0;
 }
+
+//Función llenar tablero
+void LlenarTablero(){
+}
