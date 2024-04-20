@@ -2,6 +2,8 @@
 #include <vector>
 #include <time.h>
 
+using namespace std;
+
 //Funciones
 void LimpiarPantalla();
 void Configuracion();
