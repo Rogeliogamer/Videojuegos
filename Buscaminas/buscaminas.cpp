@@ -178,4 +178,6 @@ bool ComprobarCasillas(){
 
 //Funcion mostrar tablero
 void MostrarTablero(bool mostrarBombas){
+    //Limpiar pantalla
+    LimpiarPantalla();
 }
