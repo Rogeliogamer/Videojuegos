@@ -112,6 +112,26 @@ void JugarPartida(){
                 //Guardar posición
                 cin>>posCasilla[0]>>posCasilla[1];
                 retorno = DescubrirCasilla();
+                //Perdio al descubrir casilla
+                if(retorno == -1){
+                    return;
+                }else if(retorno == 2 && tableroConBombas){
+                    //Vaciar sector
+                    VaciarSector(posCasilla[0],posCasilla[1]);
+                }
+                if(!tableroConBombas){
+                    //Llenar el tablero con bombas
+                    LlenarTablero();
+                    tablero[posCasilla[0]][posCasilla[1]] = -1;
+                    tableroConBombas = true;
+                    retorno = DescubrirCasilla();
+                    if(retorno == -1){
+                        return;
+                    }else if(retorno == 2 && tableroConBombas){
+                        //Vaciar sector
+                        VaciarSector(posCasilla[0],posCasilla[1]);
+                    }
+                }
                 break;
             case '2':
                 break;
