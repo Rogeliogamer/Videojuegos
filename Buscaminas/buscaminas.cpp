@@ -90,3 +90,13 @@ void Configuracion(){
         }
     }
 }
+
+//Funcion jugar partida
+void JugarPartida(){
+    tableroConBombas = false;
+    while(ComprobarCasillas()){
+        int retorno;
+        switch (eleccion){
+        }
+    }
+}
