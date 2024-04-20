@@ -59,3 +59,7 @@ int main(){
     }
     return 0;
 }
+
+//Funcion limpiar pantalla
+void LimpiarPantalla(){
+}
