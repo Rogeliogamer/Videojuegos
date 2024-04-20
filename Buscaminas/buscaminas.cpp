@@ -262,6 +262,8 @@ int DescubrirCasilla(){
             MostrarTablero(true);
             //Mensaje perdedor
             cout<<"\n😱 Perdiste 😱 Ingrese OK: ";
+            //Guardar OK
+            cin>>eleccion;
             return -1;
             break;
         case -1:
