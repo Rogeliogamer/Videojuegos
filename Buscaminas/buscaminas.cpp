@@ -62,4 +62,8 @@ int main(){
 
 //Funcion limpiar pantalla
 void LimpiarPantalla(){
+    //Limpiar pantalla para windows
+    if(system("cls") == -1){
+        cout<<"Error al borrar pantalla"<<endl;
+    }
 }
