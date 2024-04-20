@@ -249,4 +249,28 @@ void MostrarTablero(bool mostrarBombas){
 int DescubrirCasilla(){
     //Contador
     int cont = 0;
+    switch(tablero[posCasilla[0]][posCasilla[1]]){
+        case 11:
+        case 1011:
+            break;
+        case 10:
+            return -1;
+            break;
+        case -1:
+            for(int i = 0; i < 8; i++){
+                if(posCasilla[0]+ operaciones[i][0] >= 0 && posCasilla[0]+ operaciones[i][0] < tamTablero[0]){
+                    if(posCasilla[1]+ operaciones[i][1] >= 0 && posCasilla[1]+ operaciones[i][1] < tamTablero[1]){
+                        if(tablero[posCasilla[0]+operaciones[i][0]][posCasilla[1]+operaciones[i][1]] == 10 || tablero[posCasilla[0]+operaciones[i][0]][posCasilla[1]+operaciones[i][1]] == 1011){
+                            cont++;
+                        }
+                    }
+                }
+            }
+            tablero[posCasilla[0]][posCasilla[1]] = cont;
+            return 2;
+            break;
+        default:
+            break;
+    }
+    return 0;
 }
