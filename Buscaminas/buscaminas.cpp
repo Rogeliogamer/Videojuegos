@@ -36,5 +36,9 @@ int main(){
         LimpiarPantalla();
         //Titulo
         cout<<"::::BUSCAMINAS::::"<<endl;
+        //Opciones del menú
+        cout<<"1) Jugar"<<endl;
+        cout<<"2) Salir"<<endl;
+        cout<<"Elección: ";
     }
 }
