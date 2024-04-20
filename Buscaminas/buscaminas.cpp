@@ -74,4 +74,6 @@ void Configuracion(){
     LimpiarPantalla();
     //Titulo
     cout<<"::::CONFIGURACION::::"<<endl;
+    //Ingresa el tamaño del tablero
+    cout<<"Ingrese el tamaño del tablero: "<<endl;
 }
