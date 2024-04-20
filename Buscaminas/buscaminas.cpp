@@ -109,6 +109,9 @@ void JugarPartida(){
             case '1':
                 //Perdir posición
                 cout<<"Ingrese la posicion de la casilla a descubrir: ";
+                //Guardar posición
+                cin>>posCasilla[0]>>posCasilla[1];
+                retorno = DescubrirCasilla();
                 break;
             case '2':
                 break;
