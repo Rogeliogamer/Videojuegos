@@ -145,6 +145,8 @@ void JugarPartida(){
                 }
                 break;
             case '3':
+                //Pedir posición
+                cout<<"Ingrese la posicion de la casilla a desmarcar: ";
                 break;
         }
     }
