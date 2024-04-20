@@ -187,6 +187,37 @@ void MostrarTablero(bool mostrarBombas){
     for(int i = 0; i < tamTablero[0]; i++){
         for(int j = 0; j < tamTablero[1]; j++){
             switch(tablero[i][j]){
+                //Casilla no descubierta
+                case -1:
+                    cout<<"⬜";
+                    break;
+                case 0:
+                    cout<<"⬛";
+                    break;
+                case 1:
+                    cout<<"1️⃣";
+                    break;
+                case 2:
+                    cout<<"2️⃣";
+                    break;
+                case 3:
+                    cout<<"3️⃣";
+                    break;
+                case 4:
+                    cout<<"4️⃣";
+                    break;
+                case 5:
+                    cout<<"5️⃣";
+                    break;
+                case 6:
+                    cout<<"6️⃣";
+                    break;
+                case 7:
+                    cout<<"7️⃣";
+                    break;
+                case 8:
+                    cout<<"8️⃣";
+                    break;
             }
         }
     }
