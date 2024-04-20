@@ -11,3 +11,6 @@ void MostrarTablero(bool mostrarBombas);
 int DescubrirCasilla();
 void LlenarTablero();
 void VaciarSector(int y, int x);
+
+//Matriz
+vector<vector<int>> tablero;
