@@ -82,4 +82,11 @@ void Configuracion(){
     cout<<"Ingrese la cantidad de minas: ";
     //Guardar cantidad de minas
     cin>>cantMinas;
+    //Redimencionar tablero
+    tablero.resize(tamTablero[0],(vector<int>(tamTablero[1])));
+    for(int i = 0; i < tamTablero[0]; i++){
+        for(int j = 0; j < tamTablero[1]; j++){
+            tablero[i][j] = -1;
+        }
+    }
 }
