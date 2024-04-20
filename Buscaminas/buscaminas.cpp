@@ -78,4 +78,6 @@ void Configuracion(){
     cout<<"Ingrese el tamaño del tablero: "<<endl;
     //Guardar el tamaño del tablero
     cin>>tamTablero[0]>>tamTablero[1];
+    //Ingresa la cantidad de minas
+    cout<<"Ingrese la cantidad de minas: ";
 }
