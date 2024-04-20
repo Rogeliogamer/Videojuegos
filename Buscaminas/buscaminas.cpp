@@ -67,3 +67,7 @@ void LimpiarPantalla(){
         cout<<"Error al borrar pantalla"<<endl;
     }
 }
+
+//Funcion Configuración
+void Configuracion(){
+}
