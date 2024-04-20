@@ -244,3 +244,7 @@ void MostrarTablero(bool mostrarBombas){
         cout<<endl;
     }
 }
+
+//Función descubrir casilla
+int DescubrirCasilla(){
+}
