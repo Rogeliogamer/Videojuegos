@@ -108,9 +108,9 @@ void JugarPartida(){
         switch (eleccion){
             case '1':
                 break;
-            case '1':
+            case '2':
                 break;
-            case '1':
+            case '3':
                 break;
         }
     }
