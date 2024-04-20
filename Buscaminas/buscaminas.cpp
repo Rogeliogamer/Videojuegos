@@ -106,6 +106,12 @@ void JugarPartida(){
         cin>>eleccion;
         int retorno;
         switch (eleccion){
+            case '1':
+                break;
+            case '1':
+                break;
+            case '1':
+                break;
         }
     }
 }
