@@ -305,3 +305,7 @@ void LlenarTablero(){
         tablero[y][x] = 10;
     }
 }
+
+//Funcion vaciar sector
+void VaciarSector(int y, int x){
+}
