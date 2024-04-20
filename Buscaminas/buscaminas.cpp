@@ -102,6 +102,8 @@ void JugarPartida(){
         cout<<"2) Marcar Casilla"<<endl;
         cout<<"3) Desmarcar Casilla"<<endl;
         cout<<"Eleccion: ";
+        //Guardar elección
+        cin>>eleccion;
         int retorno;
         switch (eleccion){
         }
