@@ -247,4 +247,6 @@ void MostrarTablero(bool mostrarBombas){
 
 //Función descubrir casilla
 int DescubrirCasilla(){
+    //Contador
+    int cont = 0;
 }
