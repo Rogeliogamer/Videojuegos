@@ -254,6 +254,8 @@ int DescubrirCasilla(){
         case 1011:
             //Mensaje de casilla marcada
             cout<<"Casilla marcada, no es posible descubrirla. Ingrese OK: ";
+            //Guadar OK
+            cin>>eleccion;
             break;
         case 10:
             return -1;
