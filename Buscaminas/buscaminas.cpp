@@ -296,5 +296,7 @@ void LlenarTablero(){
     for(int i = 0; i < cantMinas; i++){
         //Coordenadas
         int x,y;
+        do{
+        }while(tablero[y][x] == 0 || tablero[y][x] == 10);
     }
 }
