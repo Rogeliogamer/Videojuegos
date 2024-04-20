@@ -218,6 +218,26 @@ void MostrarTablero(bool mostrarBombas){
                 case 8:
                     cout<<"8️⃣";
                     break;
+                //Casilla con bomba
+                case 10:
+                    if(mostrarBombas){
+                        //Mostrar bomba
+                        cout<<"💣";
+                    }
+                    else{
+                        //No mostrar nada
+                        cout<<"⬜";
+                    }
+                    break;
+                case 1011:
+                    if(mostrarBombas){
+                        cout<<"💣";
+                    }else{
+                        cout<<"🚩";
+                    }
+                case 11:
+                    cout<<"🚩";
+                    break;
             }
         }
     }
