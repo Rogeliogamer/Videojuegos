@@ -51,6 +51,10 @@ int main(){
                 //Jugar partida
                 JugarPartida();
                 break;
+            //Salir
+            case '2':
+                return 0;
+                break;
         }
     }
 }
