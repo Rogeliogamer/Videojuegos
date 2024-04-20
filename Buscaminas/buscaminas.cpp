@@ -240,5 +240,7 @@ void MostrarTablero(bool mostrarBombas){
                     break;
             }
         }
+        cout<<" "<<i;
+        cout<<endl;
     }
 }
