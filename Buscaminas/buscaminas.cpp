@@ -294,5 +294,7 @@ void LlenarTablero(){
     //Semilla nueva
     srand(time(NULL));
     for(int i = 0; i < cantMinas; i++){
+        //Coordenadas
+        int x,y;
     }
 }
