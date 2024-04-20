@@ -134,6 +134,8 @@ void JugarPartida(){
                 }
                 break;
             case '2':
+                //Pedir posición
+                cout<<"Ingrese la posicion de la casilla a marcar: ";
                 break;
             case '3':
                 break;
