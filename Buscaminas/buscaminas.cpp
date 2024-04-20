@@ -282,6 +282,8 @@ int DescubrirCasilla(){
         default:
             //Mensaje casilla descubierta
             cout<<"Esa casilla ya fue descubierta. Ingrese OK: ";
+            //Guadar OK
+            cin>>eleccion;
             break;
     }
     return 0;
