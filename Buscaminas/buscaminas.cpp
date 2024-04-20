@@ -40,5 +40,7 @@ int main(){
         cout<<"1) Jugar"<<endl;
         cout<<"2) Salir"<<endl;
         cout<<"Elección: ";
+        //Guardar elección del menu
+        cin>>eleccion;
     }
 }
