@@ -76,4 +76,6 @@ void Configuracion(){
     cout<<"::::CONFIGURACION::::"<<endl;
     //Ingresa el tamaño del tablero
     cout<<"Ingrese el tamaño del tablero: "<<endl;
+    //Guardar el tamaño del tablero
+    cin>>tamTablero[0]>>tamTablero[1];
 }
