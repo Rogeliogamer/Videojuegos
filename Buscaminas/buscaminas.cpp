@@ -180,4 +180,14 @@ bool ComprobarCasillas(){
 void MostrarTablero(bool mostrarBombas){
     //Limpiar pantalla
     LimpiarPantalla();
+    for(int i = 0; i < tamTablero[1]; i++){
+        cout<<" "<<i;
+    }
+    cout<<endl;
+    for(int i = 0; i < tamTablero[0]; i++){
+        for(int j = 0; j < tamTablero[1]; j++){
+            switch(tablero[i][j]){
+            }
+        }
+    }
 }
