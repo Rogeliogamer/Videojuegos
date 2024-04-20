@@ -42,5 +42,8 @@ int main(){
         cout<<"Elección: ";
         //Guardar elección del menu
         cin>>eleccion;
+        //Instrucciones de la opción
+        switch(eleccion){
+        }
     }
 }
