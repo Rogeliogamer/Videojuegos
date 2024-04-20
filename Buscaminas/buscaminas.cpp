@@ -34,5 +34,7 @@ int main(){
     while(true){
         //Limpiar pantalla
         LimpiarPantalla();
+        //Titulo
+        cout<<"::::BUSCAMINAS::::"<<endl;
     }
 }
