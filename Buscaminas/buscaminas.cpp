@@ -44,6 +44,13 @@ int main(){
         cin>>eleccion;
         //Instrucciones de la opción
         switch(eleccion){
+            //Partida
+            case '1':
+                //Funcion de configuración
+                Configuracion();
+                //Jugar partida
+                JugarPartida();
+                break;
         }
     }
 }
