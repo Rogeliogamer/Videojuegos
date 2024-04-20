@@ -260,6 +260,8 @@ int DescubrirCasilla(){
         case 10:
             //Mostrar tablero
             MostrarTablero(true);
+            //Mensaje perdedor
+            cout<<"\n😱 Perdiste 😱 Ingrese OK: ";
             return -1;
             break;
         case -1:
