@@ -6,3 +6,5 @@ Desarrollo de videojuegos básicos en diferentes lenguajes
 ## C++
 * Ahorcado
 * Buscaminas
+## Java
+* Calculadora
