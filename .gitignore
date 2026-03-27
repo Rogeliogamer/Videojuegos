@@ -1,0 +1,11 @@
+# Dependencias de Node
+node_modules/
+dist/
+.env
+
+# Docker y Base de Datos local
+docker/dynamodb/
+.DS_Store
+
+# Archivos de sistema
+Thumbs.db
