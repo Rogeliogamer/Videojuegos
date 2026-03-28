@@ -1,0 +1,72 @@
+/* Atacamos la raíz del proyecto con las variables oficiales de AWS */
+:root {
+  /* 1. FONDOS OSCUROS PARA MATAR EL BLANCO */
+  --amplify-colors-background-primary: #050505; /* Fondo general */
+  --amplify-colors-background-secondary: #0a0a0a; /* Fondo de la tarjeta blanca */
+  --amplify-components-authenticator-container-background-color: #050505;
+  
+  /* 2. SOLUCIÓN A LAS PESTAÑAS (Sign In / Create Account) */
+  /* Pestaña Inactiva (Gris visible) */
+  --amplify-components-tabs-item-color: rgba(255, 255, 255, 0.4); 
+  /* Pestaña Activa (Cian) */
+  --amplify-components-tabs-item-active-color: #00f2ff;
+  --amplify-components-tabs-item-active-border-color: #00f2ff;
+
+  /* 3. COLORES DE TEXTO Y BORDES */
+  --amplify-colors-font-primary: #ffffff;
+  --amplify-colors-font-secondary: #ff00ff; /* Magenta para etiquetas */
+  --amplify-colors-border-primary: #00f2ff;
+  
+  /* 4. EL BOTÓN PRINCIPAL */
+  --amplify-colors-brand-primary-80: #00f2ff; /* Color de botón */
+  --amplify-colors-brand-primary-90: #00e5f0; /* Hover del botón */
+  --amplify-colors-font-inverse: #000000; /* Texto negro sobre botón cian */
+}
+
+/* ========================================================= */
+/* 1. EL PERÍMETRO NEÓN (La franja morada en toda la pantalla) */
+/* ========================================================= */
+html, body {
+  background-color: #050505 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow: hidden !important; /* Evita que la franja cree barras de scroll */
+  box-sizing: border-box !important;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh !important;
+  width: 100vw !important;
+  box-sizing: border-box !important;
+  
+  /* AQUÍ ESTÁ LA MAGIA DEL PERÍMETRO */
+  border: 4px solid #ff00ff !important; /* Borde magenta */
+  box-shadow: inset 0 0 30px rgba(255, 0, 255, 0.6) !important; /* Resplandor hacia adentro */
+}
+
+/* ========================================================= */
+/* 2. LA CAJA DE LOGIN (Ahora más limpia para no saturar) */
+/* ========================================================= */
+.amplify-authenticator [class*="amplify-view"], 
+.amplify-authenticator .amplify-card {
+  background-color: #0a0a0a !important; 
+  border-radius: 15px !important;
+  
+  /* Como el borde magenta ya está en la pantalla, le damos un borde cian tenue a la caja */
+  border: 1px solid rgba(0, 242, 255, 0.3) !important;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8) !important; /* Sombra negra para separar del fondo */
+}
+
+/* El toque final: El borde Neón Magenta alrededor de la tarjeta */
+[data-amplify-authenticator] {
+  margin: auto;
+  border: 2px solid #ff00ff;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+  background-color: #0a0a0a;
+}

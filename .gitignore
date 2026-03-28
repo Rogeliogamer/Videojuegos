@@ -9,3 +9,8 @@ docker/dynamodb/
 
 # Archivos de sistema
 Thumbs.db
+
+# Ignorar variables de entorno en cualquier subproyecto
+**/.env
+**/.env.*
+!**/.env.example
