@@ -70,3 +70,275 @@ html, body {
   box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
   background-color: #0a0a0a;
 }
+
+/* ========================================================= */
+/* 3. MODO RESPONSIVO (Solo para celulares y tablets pequeñas) */
+/* ========================================================= */
+
+@media screen and (max-width: 768px) {
+  /* 1. Ajuste del lienzo para evitar recortes por la barra del navegador móvil */
+  html, body, #root, .page-perimeter {
+    /* Usamos 'dvh' (Dynamic Viewport Height) para que el navegador del celular 
+       no oculte la parte de abajo de tu página con su barra de direcciones */
+    min-height: 100dvh !important;
+    height: auto !important;
+    /* Hacemos el borde neón un poco más delgado para no robar espacio útil */
+    border-width: 2px !important;
+    padding: 10px !important;
+  }
+
+  /* 2. Ajuste de la caja de Login para que respire en la pantalla pequeña */
+  [data-amplify-authenticator] {
+    width: 100% !important; /* Que tome el espacio disponible */
+    max-width: 350px !important; /* Pero que no se pase de este límite */
+    margin: 0 auto !important; /* Centrado perfecto */
+    padding: 1rem 0.5rem !important; /* Reducimos el colchón interno */
+  }
+
+  /* 3. Ajuste de textos de las pestañas para que no se encimen */
+  .amplify-tabs__item {
+    font-size: 0.85rem !important;
+    padding: 0.5rem !important;
+  }
+
+  /* 4. Ajuste de los inputs para facilitar tocarlos con el dedo (Touch Target) */
+  .amplify-input {
+    font-size: 1rem !important; /* Evita que el iPhone haga zoom automático al escribir */
+    padding: 0.8rem !important;
+  }
+}
+
+/* ========================================================= */
+/* --- ESTILOS DEL LOBBY PRINCIPAL --- */
+/* ========================================================= */
+.lobby-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centra todo el bloque verticalmente */
+  height: 100%;
+  max-height: 85vh; /* Evita que choque con el borde neón de la pantalla */
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 2rem; /* Reducimos el colchón general */
+  box-sizing: border-box;
+  color: white;
+}
+
+/* HEADER Y TÍTULO DINÁMICO */
+.lobby-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 2rem; /* Reducimos la separación (antes 4rem) */
+}
+
+.lobby-title {
+  /* clamp() calcula automáticamente el tamaño: (Mínimo, Preferido, Máximo) */
+  font-size: clamp(2rem, 4vw, 3.5rem); 
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 0 10px #00f2ff, 0 0 20px #00f2ff, 0 0 40px #00f2ff; 
+  font-style: italic;
+  letter-spacing: 2px;
+}
+
+/* PANEL DE USUARIO Y BOTÓN SALIR */
+.user-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Alinea a la derecha */
+  gap: 15px;
+}
+
+.user-name {
+  color: #00f2ff; /* Nombre en cian brillante */
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.logout-btn {
+  background-color: transparent !important;
+  color: #ff0055 !important; /* Rojo neón */
+  border: 2px solid #ff0055 !important;
+  box-shadow: 0 0 10px rgba(255, 0, 85, 0.4) !important;
+  padding: 0.5rem 1.5rem !important;
+  font-size: 1rem !important;
+}
+
+.logout-btn:hover {
+  background-color: #ff0055 !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px #ff0055 !important;
+}
+
+/* CONTENEDOR LADO A LADO */
+.cards-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 3rem;
+  width: 100%;
+}
+
+/* TARJETAS BASE */
+.neon-card {
+  flex: 1; 
+  background-color: #0a0a0a;
+  padding: 2rem 2rem 2.5rem 2rem; /* Reducimos el acolchado interno (antes 3rem) */
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: space-between; /* Ayuda a que los botones se alineen abajo */
+}
+
+/* TARJETA HOST (CIAN) */
+.host-card {
+  border: 2px solid #00f2ff;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.3), inset 0 0 10px rgba(0, 242, 255, 0.2);
+}
+.host-card .card-title { color: #00f2ff; text-shadow: 0 0 10px rgba(0, 242, 255, 0.5); }
+
+/* TARJETA EQUIPOS (MAGENTA) */
+.join-card {
+  border: 2px solid #ff00ff;
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.3), inset 0 0 10px rgba(255, 0, 255, 0.2);
+}
+.join-card .card-title { color: #ff00ff; text-shadow: 0 0 10px rgba(255, 0, 255, 0.5); }
+
+/* TEXTOS DE LAS TARJETAS */
+.card-title {
+  font-size: 2rem; /* Reducido ligeramente */
+  margin-top: 0;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+.card-desc {
+  color: #e0e0e0;
+  margin-bottom: 1.5rem; /* Reducido ligeramente */
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+/* BOTONES NEÓN GLOBALES */
+.neon-btn {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  border: none;
+}
+
+.host-btn {
+  background-color: #00f2ff;
+  color: #000;
+  box-shadow: 0 0 15px #00f2ff;
+}
+.host-btn:hover { background-color: #fff; box-shadow: 0 0 30px #00f2ff; }
+
+.join-btn {
+  background-color: #ff00ff;
+  color: #000;
+  box-shadow: 0 0 15px #ff00ff;
+}
+.join-btn:hover { background-color: #fff; box-shadow: 0 0 30px #ff00ff; }
+
+/* RECUADRO DE ESCRITURA (INPUT PIN) */
+.neon-input {
+  width: 100%;
+  background-color: #1a1a2e;
+  border: 2px solid #ff00ff;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  outline: none;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 10px rgba(255, 0, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.neon-input:focus {
+  border-color: #fff;
+  box-shadow: 0 0 20px #ff00ff, inset 0 0 15px rgba(255, 0, 255, 0.5);
+}
+
+.neon-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: normal;
+}
+
+/* ========================================================= */
+/* --- RESPONSIVIDAD: MÓVILES Y TABLETS (Máximo 768px) --- */
+/* ========================================================= */
+
+@media screen and (max-width: 768px) {
+  /* 1. Ajustar el contenedor para que no se salga de la pantalla */
+  .lobby-container {
+    padding: 1rem; /* Reducimos el colchón de las orillas */
+    justify-content: center;
+  }
+
+  /* 2. El Header ahora se apila: Título arriba, Usuario abajo */
+  .lobby-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem; /* Espacio entre el título y el usuario */
+    margin-bottom: 1.5rem;
+  }
+
+  .lobby-title {
+    font-size: 2.2rem; /* Letra más chica para que quepa en un renglón o dos */
+    text-align: center;
+  }
+
+  .user-panel {
+    align-items: center; /* Centramos el botón de salir y el correo */
+  }
+
+  /* 3. Las tarjetas se apilan una sobre otra (Columna en vez de Fila) */
+  .cards-container {
+    flex-direction: column;
+    gap: 1.5rem; /* Separación vertical entre la tarjeta Host y Equipo */
+  }
+
+  /* 4. Compactamos las tarjetas para que quepan a lo alto de la pantalla */
+  .neon-card {
+    padding: 1.5rem; /* Menos relleno interno */
+    flex: none; /* Quitamos la regla de PC para que tomen el tamaño que necesitan */
+  }
+
+  .card-title {
+    font-size: 1.6rem; /* Reducimos títulos de tarjeta */
+  }
+
+  .card-desc {
+    font-size: 0.9rem; /* Texto descriptivo más pequeño */
+    margin-bottom: 1rem;
+  }
+
+  /* 5. Ajustes de botones e inputs para pulgares */
+  .neon-input {
+    font-size: 1.2rem;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .neon-btn {
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+  }
+}
