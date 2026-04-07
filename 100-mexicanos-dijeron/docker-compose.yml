@@ -1,0 +1,11 @@
+services:
+  dynamodb-local:
+    image: "amazon/dynamodb-local:latest"
+    container_name: dynamodb-100mexicanos
+    ports:
+      - "8000:8000"
+    # SINTAXIS A PRUEBA DE BALAS: Usamos un arreglo para separar cada parámetro
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "./data", "-cors", "*"]
+    volumes:
+      - "./dynamo-data:/home/dynamodblocal/data"
+    working_dir: /home/dynamodblocal
