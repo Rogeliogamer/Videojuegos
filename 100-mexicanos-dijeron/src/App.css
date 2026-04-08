@@ -616,3 +616,132 @@ html, body {
     font-size: 1rem;
   }
 }
+
+/* ========================================================= */
+/* --- UTILIDADES: SCROLL INVISIBLE --- */
+/* ========================================================= */
+
+/* Aplicamos la invisibilidad a las listas y a contenedores enteros */
+.banco-scroll::-webkit-scrollbar,
+.sin-scroll::-webkit-scrollbar {
+  display: none; 
+}
+
+.banco-scroll,
+.sin-scroll {
+  -ms-overflow-style: none;  
+  scrollbar-width: none;  
+}
+
+/* ========================================================= */
+/* --- TABLERO DEL JUEGO (CASILLAS Y STRIKES) --- */
+/* ========================================================= */
+
+.casilla-respuesta {
+  background-color: #051622;
+  border: 2px solid #00f2ff;
+  border-radius: 8px;
+  /* La magia: Mínimo 45px, ideal 8% de la pantalla, Máximo 70px */
+  height: clamp(45px, 8vh, 70px); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Fuente también adaptativa */
+  font-size: clamp(1.2rem, 3vh, 2rem); 
+  font-weight: 900;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.casilla-respuesta:hover {
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
+  transform: scale(1.02);
+}
+
+.casilla-frente {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #0a0a0a, #1a1a1a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s ease;
+}
+
+.casilla-numero {
+  background-color: #00f2ff;
+  color: #000;
+  border-radius: 50%;
+  /* Números ligeramente más chicos si hace falta */
+  width: clamp(30px, 5vh, 40px);
+  height: clamp(30px, 5vh, 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1rem, 2.5vh, 1.5rem);
+  box-shadow: 0 0 15px #00f2ff;
+}
+
+.casilla-dorso {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  color: #fff;
+  text-shadow: 0 0 10px #fff;
+}
+
+.respuesta-puntos {
+  color: #ff00ff;
+  text-shadow: 0 0 10px #ff00ff;
+}
+
+/* Efecto de revelado */
+.revelada .casilla-frente {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.revelada .casilla-dorso {
+  opacity: 1;
+}
+
+.revelada {
+  background-color: #0a0a0a;
+  border-color: #ff00ff;
+  box-shadow: inset 0 0 20px rgba(255, 0, 255, 0.2);
+}
+
+/* STRIKES (Equis rojas) */
+.strike-box {
+  width: clamp(40px, 6vh, 60px);
+  height: clamp(50px, 8vh, 80px);
+  border: 2px solid #333;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(2rem, 5vh, 3.5rem);
+  font-weight: 900;
+  color: transparent;
+  background-color: #0a0a0a;
+  transition: all 0.2s ease;
+}
+
+.strike-activo {
+  border-color: #ff0000;
+  color: #ff0000;
+  text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
+  box-shadow: inset 0 0 20px rgba(255, 0, 0, 0.3), 0 0 15px rgba(255, 0, 0, 0.5);
+  animation: sacudida 0.3s;
+}
+
+@keyframes sacudida {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px) rotate(-5deg); }
+  50% { transform: translateX(5px) rotate(5deg); }
+  75% { transform: translateX(-5px) rotate(-5deg); }
+  100% { transform: translateX(0); }
+}
