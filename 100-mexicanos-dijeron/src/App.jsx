@@ -91,79 +91,137 @@ import { BANCO_PREGUNTAS } from './preguntas';
 function PantallaConfiguracion() {
   const navigate = useNavigate();
 
-  // Estados para pregunta personalizada
-  const [customPregunta, setCustomPregunta] = useState('');
-  const [customRespuestas, setCustomRespuestas] = useState([
-    { texto: '', puntos: 0 }, { texto: '', puntos: 0 },
-    { texto: '', puntos: 0 }, { texto: '', puntos: 0 }, { texto: '', puntos: 0 }
-  ]);
+  // 1. Estados de Configuración
+  const [nombreEquipoA, setNombreEquipoA] = useState('EQUIPO 1');
+  const [nombreEquipoB, setNombreEquipoB] = useState('EQUIPO 2');
+  const [numRondas, setNumRondas] = useState(3);
+  const [rondasSeleccionadas, setRondasSeleccionadas] = useState([]);
 
-  // Función para manejar cambios en los inputs de respuestas
-  const handleRespuestaChange = (index, campo, valor) => {
-    const nuevas = [...customRespuestas];
-    nuevas[index][campo] = campo === 'puntos' ? parseInt(valor) : valor.toUpperCase();
-    setCustomRespuestas(nuevas);
+  // Estados para Pregunta Personalizada
+  const [customPregunta, setCustomPregunta] = useState('');
+  const [customRespuestas, setCustomRespuestas] = useState(
+    Array(5).fill({ texto: '', puntos: 0 })
+  );
+
+  // 2. Lógica de Selección de Preguntas (Máximo N rondas)
+  const togglePreguntaBanco = (p) => {
+    if (rondasSeleccionadas.find(r => r.id === p.id)) {
+      setRondasSeleccionadas(rondasSeleccionadas.filter(r => r.id !== p.id));
+    } else {
+      if (rondasSeleccionadas.length < numRondas) {
+        setRondasSeleccionadas([...rondasSeleccionadas, p]);
+      } else {
+        alert(`Ya seleccionaste las ${numRondas} rondas permitidas.`);
+      }
+    }
   };
 
-  // Función final para confirmar y avanzar al PIN
-  const seleccionarRonda = (preguntaFinal) => {
-    // Pasamos los datos de la pregunta a la siguiente pantalla a través del estado de la ruta
-    navigate('/tablero', { state: { ronda: preguntaFinal } });
+  const agregarPersonalizada = () => {
+    // Validación: Pregunta y 5 respuestas con puntos
+    const validas = customRespuestas.filter(r => r.texto.trim() !== '' && r.puntos > 0);
+    if (!customPregunta || validas.length < 5) {
+      alert("Para una ronda personalizada necesitas la pregunta y las 5 respuestas con sus puntos.");
+      return;
+    }
+
+    const nuevaRonda = {
+      id: Date.now(),
+      pregunta: customPregunta,
+      respuestas: customRespuestas
+    };
+
+    if (rondasSeleccionadas.length < numRondas) {
+      setRondasSeleccionadas([...rondasSeleccionadas, nuevaRonda]);
+      setCustomPregunta('');
+      setCustomRespuestas(Array(5).fill({ texto: '', puntos: 0 }));
+    } else {
+      alert("Ya completaste el número de rondas.");
+    }
+  };
+
+  const crearPartidaFinal = () => {
+    if (rondasSeleccionadas.length < numRondas) {
+      alert(`Faltan ${numRondas - rondasSeleccionadas.length} rondas por configurar.`);
+      return;
+    }
+
+    // Saltamos al tablero enviando el "Mega Objeto" de configuración
+    navigate('/tablero', {
+      state: {
+        config: {
+          equipoA: { nombre: nombreEquipoA.toUpperCase(), jugadores: [] },
+          equipoB: { nombre: nombreEquipoB.toUpperCase(), jugadores: [] },
+          rondas: rondasSeleccionadas,
+          maxRondas: numRondas
+        }
+      }
+    });
   };
 
   return (
-    // 1. Agregamos "sin-scroll" y forzamos el inicio desde arriba (flex-start)
-    <div className="host-container sin-scroll" style={{ overflowY: 'auto', maxHeight: '85vh', justifyContent: 'flex-start', paddingTop: '1rem' }}>
-      <h2 className="magenta-title" style={{ marginBottom: '1rem' }}>CONFIGURAR RONDA</h2>
+    <div className="host-container sin-scroll" style={{ overflowY: 'auto', maxHeight: '95vh', justifyContent: 'flex-start' }}>
+      <h2 className="magenta-title">CONFIGURACIÓN DE PARTIDA</h2>
       
       <div className="config-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
         
-        {/* LADO IZQUIERDO: BANCO DE PREGUNTAS */}
-        <section className="banco-section">
-          <h3 style={{ color: '#00f2ff', marginTop: 0 }}>Banco de Preguntas</h3>
-          <div className="banco-scroll" style={{ maxHeight: '55vh', overflowY: 'auto' }}>
-            {BANCO_PREGUNTAS.map(p => (
-              <div key={p.id} className="pregunta-item" onClick={() => seleccionarRonda(p)}
-                   style={{ border: '1px solid #ff00ff', padding: '10px', marginBottom: '8px', cursor: 'pointer' }}>
-                <p style={{ margin: 0 }}>{p.pregunta}</p>
-              </div>
-            ))}
+        {/* LADO IZQUIERDO: EQUIPOS Y RONDAS */}
+        <section className="crear-section">
+          <h3 style={{ color: '#00f2ff' }}>1. Equipos y Rondas</h3>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
+            <input className="neon-input-magenta" placeholder="Nombre Equipo A" onChange={e => setNombreEquipoA(e.target.value)} />
+            <input className="neon-input-magenta" placeholder="Nombre Equipo B" onChange={e => setNombreEquipoB(e.target.value)} />
           </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label>Número de Rondas (1-5): </label>
+            <input type="number" min="1" max="5" value={numRondas} className="neon-input-magenta" style={{ width: '60px', marginLeft: '10px' }} 
+                   onChange={e => setNumRondas(parseInt(e.target.value))} />
+          </div>
+
+          <h3 style={{ color: '#ff00ff' }}>2. Pregunta Personalizada</h3>
+          <input className="neon-input-magenta" placeholder="Pregunta..." value={customPregunta} onChange={e => setCustomPregunta(e.target.value)} />
+          {customRespuestas.map((r, i) => (
+            <div key={i} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+              <input className="neon-input-magenta" placeholder={`Respuesta ${i+1}`} style={{ flex: 3 }}
+                     onChange={e => {
+                      const n = [...customRespuestas];
+                      n[i] = { ...n[i], texto: e.target.value.toUpperCase() };
+                      setCustomRespuestas(n);
+                    }} />
+              <input type="number" className="neon-input-magenta" placeholder="Pts" style={{ flex: 1 }}
+                     onChange={e => {
+                      const n = [...customRespuestas];
+                      n[i] = { ...n[i], puntos: parseInt(e.target.value) || 0 };
+                      setCustomRespuestas(n);
+                    }} />
+            </div>
+          ))}
+          <button className="neon-btn" style={{ marginTop: '10px', width: '100%', fontSize: '0.8rem' }} onClick={agregarPersonalizada}>
+            AÑADIR A LA PARTIDA
+          </button>
         </section>
 
-        {/* LADO DERECHO: CREAR PROPIA */}
-        <section className="crear-section">
-          <h3 style={{ color: '#ff00ff', marginTop: 0 }}>Crear Pregunta Personalizada</h3>
-          <input 
-            type="text" placeholder="¿Cuál es la pregunta?" 
-            className="neon-input-magenta" style={{ fontSize: '1rem', width: '100%', boxSizing: 'border-box' }}
-            onChange={(e) => setCustomPregunta(e.target.value)}
-          />
-          
-          {/* 2. Compactamos los márgenes y paddings para ganar espacio */}
-          <div className="respuestas-inputs" style={{ marginTop: '0.8rem' }}>
-            {customRespuestas.map((r, i) => (
-              <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
-                <input 
-                  type="text" placeholder={`Respuesta ${i+1}`} 
-                  className="neon-input-magenta" style={{ flex: 3, padding: '0.4rem', fontSize: '0.9rem' }} 
-                  onChange={(e) => handleRespuestaChange(i, 'texto', e.target.value)} 
-                />
-                <input 
-                  type="number" placeholder="Pts" 
-                  className="neon-input-magenta" style={{ flex: 1, padding: '0.4rem', fontSize: '0.9rem', textAlign: 'center' }} 
-                  onChange={(e) => handleRespuestaChange(i, 'puntos', e.target.value)} 
-                />
+        {/* LADO DERECHO: BANCO Y RESUMEN */}
+        <section className="banco-section">
+          <h3 style={{ color: '#00f2ff' }}>3. Banco de Preguntas</h3>
+          <div className="banco-scroll" style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '1rem' }}>
+            {BANCO_PREGUNTAS.map(p => (
+              <div key={p.id} className="pregunta-item"
+                   style={{ border: `1px solid ${rondasSeleccionadas.find(r => r.id === p.id) ? '#00f2ff' : '#333'}`, padding: '8px', marginBottom: '5px', cursor: 'pointer' }}
+                   onClick={() => togglePreguntaBanco(p)}>
+                {p.pregunta}
               </div>
             ))}
           </div>
 
-          <button 
-            className="neon-btn start-btn" 
-            style={{ marginTop: '0.5rem', width: '100%', padding: '0.8rem' }}
-            onClick={() => seleccionarRonda({ pregunta: customPregunta, respuestas: customRespuestas })}
-          >
-            USAR ESTA PREGUNTA
+          <h3 style={{ color: '#ff00ff' }}>Resumen: {rondasSeleccionadas.length} / {numRondas}</h3>
+          <div style={{ backgroundColor: '#111', padding: '10px', borderRadius: '5px', minHeight: '100px' }}>
+            {rondasSeleccionadas.map((r, i) => (
+              <div key={i} style={{ fontSize: '0.8rem', color: '#00f2ff' }}>R{i+1}: {r.pregunta}</div>
+            ))}
+          </div>
+
+          <button className="neon-btn start-btn" style={{ marginTop: '1.5rem', width: '100%' }} onClick={crearPartidaFinal}>
+            CREAR PARTIDA CON {numRondas} RONDAS
           </button>
         </section>
       </div>
@@ -174,282 +232,324 @@ function PantallaConfiguracion() {
 // --- COMPONENTE 2: PANEL DEL HOST (Administrador) ---
 function PantallaTablero() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { config } = location.state || {}; // Recibimos la super configuración de la pantalla anterior
 
   // Estados de la sala
   const [pin, setPin] = useState('----');
-  const [equipos, setEquipos] = useState([]); // Aquí guardaremos los que se conecten
+  const [salaDB, setSalaDB] = useState(null); // Aquí guardaremos los datos en tiempo real
 
-  const location = useLocation(); // Importar useLocation de react-router-dom
-  const { ronda } = location.state || {}; // Obtenemos la pregunta elegida
-
-  // useEffect se ejecuta una sola vez al abrir esta pantalla
+  // 1. CREAR LA SALA CON LA NUEVA ESTRUCTURA
   useEffect(() => {
+    // Si alguien entra directo sin configurar, lo regresamos
+    if (!config) { navigate('/config-ronda'); return; }
+
     const crearSala = async () => {
-      // 1. Generamos el PIN aleatorio
       const pinAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
       setPin(pinAleatorio);
 
-      // 2. Preparamos la orden para guardar en la base de datos
       const comando = new PutCommand({
         TableName: "Partidas_100Mexicanos",
         Item: {
-          pinSala: pinAleatorio, // Nuestra Clave Principal
-          equipos: [],           // Empezamos sin equipos
-          estado: "esperando",    // El juego aún no arranca
-          rondaActiva: ronda // <--- AQUÍ GUARDAMOS LA PREGUNTA SELECCIONADA
+          pinSala: pinAleatorio,
+          estado: "esperando",
+          equipoA: config.equipoA,
+          equipoB: config.equipoB,
+          rondas: config.rondas,
+          rondaActiva: config.rondas[0], // Pre-cargamos la ronda 1
+          indiceRondaActual: 0,
+          puntajesGlobales: { [config.equipoA.nombre]: 0, [config.equipoB.nombre]: 0 }
         }
       });
 
-      // 3. Enviamos la orden a DynamoDB
       try {
         await docClient.send(comando);
-        console.log("📡 Sala registrada en la Base de Datos con PIN:", pinAleatorio);
+        console.log("📡 Mega-Sala registrada con PIN:", pinAleatorio);
       } catch (error) {
-        console.error("❌ Error al conectar con DynamoDB:", error);
+        console.error("❌ Error conectando con DynamoDB:", error);
       }
     };
-
     crearSala();
-  }, []);
+  }, [config, navigate]);
 
-  // --- NUEVO: useEffect para Sondeo (Polling) ---
-  // Este bloque se ejecutará automáticamente en cuanto se genere el PIN
+  // 2. RADAR: VIGILAR QUIÉN SE UNE A QUÉ EQUIPO
   useEffect(() => {
-    // Si el PIN aún no se genera, no hacemos nada
     if (pin === '----') return;
-
-    // Función que va a DynamoDB a leer el estado actual de la sala
-    const buscarEquipos = async () => {
+    const vigilarLobby = async () => {
       try {
-        const comando = new GetCommand({
-          TableName: "Partidas_100Mexicanos",
-          Key: { pinSala: pin }
-        });
-
+        const comando = new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala: pin } });
         const respuesta = await docClient.send(comando);
-
-        // Si la sala existe y la base de datos tiene equipos, actualizamos la pantalla
-        if (respuesta.Item && respuesta.Item.equipos) {
-          setEquipos(respuesta.Item.equipos);
+        if (respuesta.Item) {
+          setSalaDB(respuesta.Item); // Actualizamos la vista con los jugadores nuevos
         }
-      } catch (error) {
-        console.error("❌ Error en el radar de equipos:", error);
-      }
+      } catch (error) { console.error(error); }
     };
-
-    // Configuramos un reloj (Intervalo) que ejecute "buscarEquipos" cada 2000 milisegundos (2 segundos)
-    const radar = setInterval(buscarEquipos, 2000);
-    // Limpieza de memoria: Si el Host sale de la pantalla, apagamos el radar para no saturar la PC
+    const radar = setInterval(vigilarLobby, 2000);
     return () => clearInterval(radar);
+  }, [pin]);
 
-  }, [pin]); // El radar se enciende en cuanto la variable "pin" cambia
-
-  // --- NUEVA FUNCIÓN: Gatillo para iniciar el juego ---
+  // 3. GATILLO PARA INICIAR EL JUEGO
   const iniciarJuego = async () => {
     try {
-      // 1. Le decimos a DynamoDB que cambie el estado de la sala
       const comandoUpdate = new UpdateCommand({
         TableName: "Partidas_100Mexicanos",
         Key: { pinSala: pin },
         UpdateExpression: "SET estado = :nuevoEstado",
-        ExpressionAttributeValues: {
-          ":nuevoEstado": "jugando" // ¡Semáforo en verde!
-        }
+        ExpressionAttributeValues: { ":nuevoEstado": "jugando" }
       });
-
       await docClient.send(comandoUpdate);
-
-      // 2. El Host salta a su pantalla de juego
       navigate('/juego-host', { state: { pinSala: pin } });
     } catch (error) {
-      console.error("❌ Error al iniciar la partida:", error);
-      alert("Hubo un error al arrancar. Revisa tu conexión a la base de datos.");
+      console.error(error);
     }
   };
 
+  // --- CÁLCULOS DE BALANCE DE JUGADORES ---
+  const jugadoresA = salaDB?.equipoA?.jugadores || [];
+  const jugadoresB = salaDB?.equipoB?.jugadores || [];
+
+  // Condición 1: Diferencia máxima de 1 jugador entre equipos
+  const balanceado = Math.abs(jugadoresA.length - jugadoresB.length) <= 1;
+  // Condición 2: Al menos 1 jugador en cada equipo para poder jugar
+  const minimoJugadores = jugadoresA.length > 0 && jugadoresB.length > 0;
+
   return (
-    <div className="host-container">
-      {/* Barra de navegación superior */}
+    <div className="host-container sin-scroll" style={{ height: '90vh', justifyContent: 'flex-start', paddingTop: '1rem' }}>
       <header className="host-nav">
-        <button onClick={() => navigate('/')} className="volver-btn">
-          ⬅ Volver al Lobby
-        </button>
+        <button onClick={() => navigate('/config-ronda')} className="volver-btn">⬅ Cancelar Partida</button>
         <span className="host-badge">MODO ADMINISTRADOR</span>
       </header>
 
-      {/* Sección principal: EL PIN */}
-      <div className="pin-section">
+      <div className="pin-section" style={{ marginBottom: '1rem' }}>
         <h2 className="pin-subtitle">PIN DE LA SALA</h2>
-        <h1 className="huge-neon-pin">{pin}</h1>
-        <p className="pin-instructions">Ingresa a la página desde tu celular y usa este PIN para unirte al tablero.</p>
+        <h1 className="huge-neon-pin" style={{ fontSize: 'clamp(4rem, 8vw, 6rem)' }}>{pin}</h1>
       </div>
 
-      {/* Sección inferior: Equipos Conectados */}
-      <div className="equipos-section">
-        <h3 className="equipos-title">EQUIPOS CONECTADOS ({equipos.length})</h3>
-        
-        <div className="equipos-grid">
-          {equipos.length === 0 ? (
-            <div className="esperando-animacion">Esperando jugadores...</div>
-          ) : (
-            equipos.map((equipo, index) => (
-              <div key={index} className="equipo-conectado" style={{ fontSize: '1.5rem', color: '#fff', textShadow: '0 0 10px #00f2ff' }}>
-                {equipo}
-              </div>
-            ))
-          )}
+      {/* VISTA DE EQUIPOS Y JUGADORES CONECTADOS */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+        {/* PANEL EQUIPO A */}
+        <div style={{ backgroundColor: '#0a0a0a', border: '1px solid #00f2ff', borderRadius: '10px', padding: '1rem' }}>
+          <h3 style={{ color: '#00f2ff', marginTop: 0, textAlign: 'center' }}>
+            {config?.equipoA.nombre} ({jugadoresA.length}/5)
+          </h3>
+          <div style={{ minHeight: '100px', color: '#fff', textAlign: 'center' }}>
+            {jugadoresA.length === 0 ? <p style={{ color: '#555' }}>Esperando jugadores...</p> :
+             jugadoresA.map((jugador, i) => <div key={i}>👤 {jugador}</div>)}
+          </div>
+        </div>
+
+        {/* PANEL EQUIPO B */}
+        <div style={{ backgroundColor: '#0a0a0a', border: '1px solid #00f2ff', borderRadius: '10px', padding: '1rem' }}>
+          <h3 style={{ color: '#00f2ff', marginTop: 0, textAlign: 'center' }}>
+            {config?.equipoB.nombre} ({jugadoresB.length}/5)
+          </h3>
+          <div style={{ minHeight: '100px', color: '#fff', textAlign: 'center' }}>
+            {jugadoresB.length === 0 ? <p style={{ color: '#555' }}>Esperando jugadores...</p> :
+             jugadoresB.map((jugador, i) => <div key={i}>👤 {jugador}</div>)}
+          </div>
         </div>
       </div>
 
-      {/* === AQUÍ RESTAURAMOS EL BOTÓN DE INICIO === */}
-      <div className="start-section">
+      {/* EL BOTÓN INTELIGENTE CON LAS CONDICIONES DE BALANCE */}
+      <div className="start-section" style={{ textAlign: 'center' }}>
         <button 
-          onClick={iniciarJuego} /* CONECTAMOS EL GATILLO AQUÍ */
-          className={`neon-btn ${equipos.length > 0 ? 'start-btn' : 'start-btn-disabled'}`}
-          disabled={equipos.length === 0}
+          onClick={iniciarJuego}
+          disabled={!balanceado || !minimoJugadores}
+          className={`neon-btn ${balanceado && minimoJugadores ? 'start-btn' : 'start-btn-disabled'}`}
+          style={{ width: '100%', padding: '1.5rem', fontSize: '1.2rem' }}
         >
-          ¡INICIAR TABLERO!
+          {(!minimoJugadores) ? "ESPERANDO AL MENOS 1 JUGADOR POR BANDO..." : 
+           (!balanceado) ? "⚠️ EQUIPOS DESBALANCEADOS" : 
+           "¡INICIAR PARTIDA!"}
         </button>
       </div>
-      
     </div>
   );
 }
 
+// --- ACTUALIZACIÓN DE UNIÓN DE JUGADORES (UX MEJORADA) ---
 function PantallaVotacion() {
   const navigate = useNavigate();
 
-  // Estados para el formulario de ingreso
   const [pinSala, setPinSala] = useState('');
-  const [nombreEquipo, setNombreEquipo] = useState('');
-  const [unido, setUnido] = useState(false); // Controla si ya entramos a la sala
+  const [nombreJugador, setNombreJugador] = useState('');
+  const [equipoElegido, setEquipoElegido] = useState('');
+  const [infoSala, setInfoSala] = useState(null); // Para guardar nombres de equipos de la DB
+  const [unido, setUnido] = useState(false);
 
-  // Función que simula la conexión a AWS
+  // 1. BUSCADOR DE SALA EXPLÍCITO
+  const buscarSala = async () => {
+    if (pinSala.length !== 4) {
+      alert("El PIN debe tener 4 dígitos.");
+      return;
+    }
+    try {
+      const res = await docClient.send(new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala } }));
+      if (res.Item) {
+        setInfoSala(res.Item);
+      } else {
+        alert("❌ Sala no encontrada. Revisa el PIN.");
+      }
+    } catch (e) { 
+      console.error(e);
+    }
+  };
+
+  // 2. UNIRSE AL EQUIPO Y ENTRAR A SALA DE ESPERA
   const handleUnirse = async (e) => {
     e.preventDefault(); // Evita que la página se recargue al enviar el formulario
 
-    // 1. Validación básica de la interfaz
-    if(pinSala.length !== 4 || nombreEquipo.trim() === '') {
-      alert("Por favor, ingresa un PIN de 4 dígitos y el nombre de tu equipo.");
+    if (!equipoElegido || !nombreJugador.trim()) {
+      alert("Elige un equipo y escribe tu nombre.");
+      return;
+    }
+
+    const equipoKey = equipoElegido === infoSala.equipoA.nombre ? 'equipoA' : 'equipoB';
+    const jugadoresActuales = infoSala[equipoKey].jugadores || [];
+
+    if (jugadoresActuales.length >= 5) {
+      alert("Este equipo ya está lleno (Máx 5 jugadores).");
       return;
     }
 
     try {
-      // 2. BUSCAR: ¿Existe este PIN en la base de datos?
-      const comandoGet = new GetCommand({
-        TableName: "Partidas_100Mexicanos",
-        Key: { pinSala: pinSala }
-      });
-
-      const respuesta = await docClient.send(comandoGet);
-
-      // Si no hay 'Item' en la respuesta, la sala no existe
-      if (!respuesta.Item) {
-        alert("❌ El PIN ingresado no existe o la sala ya se cerró.");
-        return; // Detenemos la ejecución aquí
-      }
-
-      // 3. ACTUALIZAR: Si la sala existe, agregamos el equipo a la lista
+      // 3. REGISTRO EN DYNAMODB (SET dinámico para agregar al arreglo de jugadores)
       const comandoUpdate = new UpdateCommand({
         TableName: "Partidas_100Mexicanos",
         Key: { pinSala: pinSala },
-        // Usamos una fórmula nativa de DynamoDB para agregar un elemento a un arreglo existente
-        UpdateExpression: "SET equipos = list_append(equipos, :nuevoEquipo)",
+        UpdateExpression: `SET ${equipoKey}.jugadores = list_append(if_not_exists(${equipoKey}.jugadores, :emptyList), :nuevoJugador)`,
         ExpressionAttributeValues: {
-          ":nuevoEquipo": [nombreEquipo.trim().toUpperCase()] // Se envía como arreglo
+          ":nuevoJugador": [nombreJugador.trim().toUpperCase()],
+          ":emptyList": []
         }
       });
 
       await docClient.send(comandoUpdate);
 
-      // 4. Éxito: Cambiamos la pantalla del usuario
+      // ¡ÉXITO! Pasamos al estado de espera (NO saltamos al juego todavía)
       setUnido(true);
-      console.log(`✅ ¡Éxito! El equipo ${nombreEquipo} se unió a la sala ${pinSala}`);
-
-    } catch (error) {
-      console.error("❌ Error al comunicarse con DynamoDB:", error);
-      alert("Error de conexión. Intenta de nuevo.");
-    }
-  };
-
-  // --- NUEVO: useEffect para vigilar el arranque del juego ---
-  useEffect(() => {
-    // Si el equipo aún no ingresa su PIN, apagamos el radar
-    if (!unido) return;
-
-    const vigilarEstado = async () => {
-      try {
-        const comando = new GetCommand({
-          TableName: "Partidas_100Mexicanos",
-          Key: { pinSala: pinSala }
-        });
-
-        const respuesta = await docClient.send(comando);
-
-        // Si la base de datos dice que el semáforo está en verde...
-        if (respuesta.Item && respuesta.Item.estado === "jugando") {
-          console.log("¡El Host arrancó la partida! Saltando...");
-          // SALTO CON DATOS: Llevamos el PIN y el Nombre a la zona de respuestas
-          navigate('/juego-equipo', { state: { pinSala: pinSala, nombreEquipo: nombreEquipo } });
-        }
       } catch (error) {
-        console.error("❌ Error vigilando el estado:", error);
+        console.error(error);
+        alert("Error al unirse. Intenta de nuevo.");
       }
     };
 
-    // Consultamos la base de datos cada 2 segundos
-    const radarJuego = setInterval(vigilarEstado, 2000);
+    // 3. RADAR DE ESPERA (Vigila cuando el Host le da a Iniciar Partida)
+    useEffect(() => {
+    if (!unido) return;
 
-    // Limpieza de memoria
-    return () => clearInterval(radarJuego);
-  }, [unido, pinSala, navigate]);
+    const vigilarEstado = setInterval(async () => {
+      try {
+        const comando = new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala } });
+        const res = await docClient.send(comando);
 
+        // Si el Host ya cambió el semáforo a verde...
+        if (res.Item && res.Item.estado === "jugando") {
+          console.log("¡El Host arrancó! Saltando...");
+          // Ahora sí, hacemos el salto sincronizado llevando nuestros datos
+          navigate('/juego-equipo', { state: { pinSala, nombreEquipo: equipoElegido, nombreJugador } });
+        }
+      } catch (error) {
+        console.error("Error vigilando estado:", error);
+      }
+    }, 1500);
+
+    return () => clearInterval(vigilarEstado);
+  }, [unido, pinSala, equipoElegido, nombreJugador, navigate]);
+
+  // ==========================================
+  // RENDERIZADO VISUAL
+  // ==========================================
+
+  // VISTA A: EL JUGADOR YA SE UNIÓ Y ESTÁ ESPERANDO AL HOST
+  if (unido) {
+    return (
+      <div className="equipo-container" style={{ justifyContent: 'center', textAlign: 'center', height: '80vh' }}>
+        <h1 className="magenta-title" style={{ fontSize: '3rem', animation: 'pulso 2s infinite' }}>
+          ¡CONECTADO!
+        </h1>
+        <h2 style={{ color: '#00f2ff', marginTop: '2rem' }}>Equipo: {equipoElegido}</h2>
+        <h3 style={{ color: '#fff' }}>Jugador: {nombreJugador.toUpperCase()}</h3>
+        <p style={{ color: '#aaa', marginTop: '3rem', fontSize: '1.2rem' }}>
+          Mire la pantalla principal... el Host iniciará la partida pronto.
+        </p>
+      </div>
+    );
+  }
+
+  // VISTA B: FORMULARIO DE INGRESO
   return (
-    <div className="equipo-container">
-      {/* Barra de navegación superior (Magenta) */}
-      <header className="equipo-nav">
-        <button onClick={() => navigate('/')} className="volver-btn-magenta">
-          ⬅ Volver
+    <div className="equipo-container" style={{ justifyContent: 'flex-start', paddingTop: '2rem' }}>
+      <h2 className="magenta-title" style={{ textAlign: 'center', marginBottom: '2rem' }}>UNIRSE AL JUEGO</h2>
+      {/* PASO 1: INGRESAR PIN */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
+        <input 
+          className="neon-input-magenta" 
+          placeholder="PIN de 4 dígitos" 
+          maxLength={4} 
+          value={pinSala} 
+          onChange={e => setPinSala(e.target.value)}
+          style={{ flex: 2, textAlign: 'center', fontSize: '1.5rem', letterSpacing: '5px' }}
+        />
+        <button 
+          className="neon-btn start-btn" 
+          onClick={buscarSala}
+          style={{ flex: 1, padding: '0', fontSize: '1rem' }}
+        >
+          BUSCAR
         </button>
-        <span className="equipo-badge">MODO EQUIPO</span>
-      </header>
+      </div>
 
-      {/* RENDERIZADO CONDICIONAL: Formulario vs Pantalla de Espera */}
-      {!unido ? (
-        <div className="join-form-section">
-          <h2 className="magenta-title">UNIRSE A LA PARTIDA</h2>
+      {/* PASO 2: ELEGIR EQUIPO Y NOMBRE (Aparece solo si la sala existe) */}
+      {infoSala && (
+        <div style={{ marginTop: '1rem', width: '100%', animation: 'fadeIn 0.5s' }}>
+          <input 
+            className="neon-input-magenta" 
+            placeholder="Tu Nombre / Apodo" 
+            onChange={e => setNombreJugador(e.target.value)} 
+            style={{ width: '100%', boxSizing: 'border-box', textAlign: 'center', marginBottom: '1.5rem' }}
+          />
 
-          <form onSubmit={handleUnirse} className="join-form">
-            <input
-              type="number"
-              placeholder="PIN DE LA SALA"
-              value={pinSala}
-              onChange={(e) => setPinSala(e.target.value)}
-              maxLength={4}
-              className="neon-input-magenta"
-              required
-            />
-            <input
-              type="text"
-              placeholder="NOMBRE DEL EQUIPO (Ej. Los Compadres)"
-              value={nombreEquipo}
-              onChange={(e) => setNombreEquipo(e.target.value.toUpperCase())}
-              maxLength={15}
-              className="neon-input-magenta"
-              required
-            />
-            <button type="submit" className="neon-btn join-submit-btn">
-              ¡CONECTAR AL TABLERO!
+          <p style={{ color: '#00f2ff', textAlign: 'center', marginBottom: '1rem' }}>SELECCIONA TU BANDO:</p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* BOTÓN EQUIPO A */}
+            <button 
+              onClick={() => setEquipoElegido(infoSala.equipoA.nombre)} 
+              style={{ 
+                padding: '1rem', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s',
+                // Lógica de colores dinámicos
+                backgroundColor: equipoElegido === infoSala.equipoA.nombre ? '#00f2ff' : 'transparent',
+                color: equipoElegido === infoSala.equipoA.nombre ? '#000' : '#00f2ff',
+                border: '2px solid #00f2ff',
+                boxShadow: equipoElegido === infoSala.equipoA.nombre ? '0 0 20px #00f2ff' : 'none'
+              }}
+            >
+              {infoSala.equipoA.nombre} ({infoSala.equipoA.jugadores ? infoSala.equipoA.jugadores.length : 0}/5)
             </button>
-          </form>
-        </div>
-      ) : (
-        <div className="waiting-screen">
-          <h2 className="magenta-title">¡CONECTADO!</h2>
-          <p className="team-name-display">{nombreEquipo}</p>
-          <div className="esperando-animacion-magenta">
-            Mire la pantalla principal... el Host iniciará la ronda pronto.
+
+            {/* BOTÓN EQUIPO B */}
+            <button 
+              onClick={() => setEquipoElegido(infoSala.equipoB.nombre)} 
+              style={{ 
+                padding: '1rem', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s',
+                // Lógica de colores dinámicos (Magenta)
+                backgroundColor: equipoElegido === infoSala.equipoB.nombre ? '#ff00ff' : 'transparent',
+                color: equipoElegido === infoSala.equipoB.nombre ? '#000' : '#ff00ff',
+                border: '2px solid #ff00ff',
+                boxShadow: equipoElegido === infoSala.equipoB.nombre ? '0 0 20px #ff00ff' : 'none'
+              }}
+            >
+              {infoSala.equipoB.nombre} ({infoSala.equipoB.jugadores ? infoSala.equipoB.jugadores.length : 0}/5)
+            </button>
           </div>
+          <button 
+            className="neon-btn start-btn" 
+            style={{ width: '100%', marginTop: '2rem', padding: '1.5rem', fontSize: '1.2rem' }} 
+            onClick={handleUnirse}
+          >
+            ¡ENTRAR A LA SALA DE ESPERA!
+          </button>
         </div>
       )}
     </div>
@@ -460,163 +560,246 @@ function PantallaVotacion() {
 function PantallaJuegoHost() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { pinSala } = location.state || {}; // Recibimos el PIN
+  const { pinSala } = location.state || {};
 
+  const [salaDB, setSalaDB] = useState(null);
   const [ronda, setRonda] = useState(null);
+  
   const [reveladas, setReveladas] = useState([false, false, false, false, false]);
   const [strikes, setStrikes] = useState(0);
+  const [fase, setFase] = useState('enfrentamiento');
+  const [equipoControl, setEquipoControl] = useState(null);
+  const [puntajesGlobales, setPuntajesGlobales] = useState({});
 
-  // ==========================================
-  // ZONA DE HOOKS (Todos deben ir arriba)
-  // ==========================================
+  const [intentoCaraACara, setIntentoCaraACara] = useState({});
+  const [mensajeCaraACara, setMensajeCaraACara] = useState('');
+  const [respuestasProcesadas, setRespuestasProcesadas] = useState(0); 
 
-  // 1. CARGAR TABLERO INICIAL
   useEffect(() => {
-    if (!pinSala) {
-      navigate('/');
-      return;
-    }
+    if (!pinSala) { navigate('/'); return; }
     const cargarTablero = async () => {
       try {
-        const comando = new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala: pinSala } });
-        const respuesta = await docClient.send(comando);
-        if (respuesta.Item && respuesta.Item.rondaActiva) {
-          setRonda(respuesta.Item.rondaActiva);
+        const cmd = new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala: pinSala } });
+        const res = await docClient.send(cmd);
+        if (res.Item) {
+          setSalaDB(res.Item);
+          if (res.Item.rondaActiva) setRonda(res.Item.rondaActiva);
+          if (res.Item.puntajesGlobales) setPuntajesGlobales(res.Item.puntajesGlobales);
         }
-      } catch (error) {
-        console.error("❌ Error cargando el tablero:", error);
-      }
+      } catch (error) { console.error("Error", error); }
     };
     cargarTablero();
   }, [pinSala, navigate]);
 
-  // 2. MOTOR DE JUEGO (Radar de Validación Automática)
+  const puntosRonda = ronda ? ronda.respuestas.reduce((total, resp, index) => reveladas[index] ? total + (resp.puntos || 0) : total, 0) : 0;
+  const eqA = salaDB?.equipoA?.nombre;
+  const eqB = salaDB?.equipoB?.nombre;
+  
+  const idxRonda = salaDB?.indiceRondaActual || 0;
+  const jugadorA = salaDB?.equipoA?.jugadores[idxRonda % (salaDB.equipoA?.jugadores.length || 1)] || '';
+  const jugadorB = salaDB?.equipoB?.jugadores[idxRonda % (salaDB.equipoB?.jugadores.length || 1)] || '';
+
+  // NUEVO: Verificamos si esta es literalmente la última ronda
+  const esFinDeJuego = fase === 'resumen' && salaDB && (salaDB.indiceRondaActual + 1 >= salaDB.rondas.length);
+
+  // CORRECCIÓN DE BUG: Ahora calculamos usando las cartas EXACTAS de este instante
+  const asignarPuntosAuto = async (equipoGanador, nuevasReveladas) => {
+    const puntosCalculados = ronda.respuestas.reduce((total, resp, index) =>
+      nuevasReveladas[index] ? total + (resp.puntos || 0) : total
+    , 0);
+
+    const nuevosPuntajes = { ...puntajesGlobales, [equipoGanador]: (puntajesGlobales[equipoGanador] || 0) + puntosCalculados };
+    try {
+      await docClient.send(new UpdateCommand({
+        TableName: "Partidas_100Mexicanos", Key: { pinSala: pinSala },
+        UpdateExpression: "SET puntajesGlobales = :pts",
+        ExpressionAttributeValues: { ":pts": nuevosPuntajes }
+      }));
+      setPuntajesGlobales(nuevosPuntajes);
+      setFase('resumen'); 
+    } catch (e) { console.error(e); }
+  };
+
   useEffect(() => {
     if (!ronda || !pinSala) return;
 
     const motorDeJuego = async () => {
       try {
-        const comandoLectura = new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala: pinSala } });
-        const respuestaDB = await docClient.send(comandoLectura);
-
-        if (respuestaDB.Item && respuestaDB.Item.intentoAdivinar) {
-          const intento = respuestaDB.Item.intentoAdivinar;
-          console.log("📡 Respuesta detectada:", intento);
-
+        const res = await docClient.send(new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala } }));
+        if (res.Item && res.Item.intentoAdivinar) {
+          const { equipo, texto } = res.Item.intentoAdivinar;
           let aciertoIndex = -1;
           ronda.respuestas.forEach((resp, index) => {
-            if (resp.texto && resp.texto.trim().toUpperCase() === intento) {
-              aciertoIndex = index;
-            }
+            if (resp.texto && resp.texto.trim().toUpperCase() === texto && !reveladas[index]) aciertoIndex = index;
           });
+          
+          if (fase === 'enfrentamiento') {
+            if (aciertoIndex === 0) {
+              const nuevas = [...reveladas]; nuevas[0] = true;
+              setReveladas(nuevas);
+              setEquipoControl(equipo);
+              setFase('control');
+              setMensajeCaraACara('');
+              setIntentoCaraACara({});
+              setRespuestasProcesadas(p => p + 1);
+            } else {
+              if (!intentoCaraACara.equipo) {
+                if (aciertoIndex !== -1) setReveladas(prev => { const n = [...prev]; n[aciertoIndex] = true; return n; });
+                setIntentoCaraACara({ equipo, index: aciertoIndex });
+                setMensajeCaraACara(`Respuesta registrada. Esperando al equipo contrario...`);
+              } else {
+                if (aciertoIndex !== -1) setReveladas(prev => { const n = [...prev]; n[aciertoIndex] = true; return n; });
+                
+                let idx1 = intentoCaraACara.index; 
+                let idx2 = aciertoIndex;
 
-          if (aciertoIndex !== -1) {
-            setReveladas(prev => {
-              const nuevas = [...prev];
-              nuevas[aciertoIndex] = true;
-              return nuevas;
-            });
-          } else {
-            setStrikes(prev => prev < 3 ? prev + 1 : prev);
+                if (idx1 === -1 && idx2 === -1) {
+                  setMensajeCaraACara("❌ AMBOS FALLARON ❌");
+                  setIntentoCaraACara({});
+                  setRespuestasProcesadas(p => p + 1); 
+                } else {
+                  let rank1 = idx1 === -1 ? 999 : idx1;
+                  let rank2 = idx2 === -1 ? 999 : idx2;
+                  
+                  setEquipoControl(rank1 < rank2 ? intentoCaraACara.equipo : equipo);
+                  setFase('control');
+                  setMensajeCaraACara('');
+                  setIntentoCaraACara({});
+                  setRespuestasProcesadas(p => p + 1); 
+                }
+              }
+            }
+          } 
+          else if (fase === 'control' && equipo === equipoControl) {
+            if (aciertoIndex !== -1) {
+              const nuevasReveladas = [...reveladas];
+              nuevasReveladas[aciertoIndex] = true;
+              setReveladas(nuevasReveladas);
+              
+              let todasDescubiertas = true;
+              ronda.respuestas.forEach((r, i) => { if (r.texto && !nuevasReveladas[i]) todasDescubiertas = false; });
+              if (todasDescubiertas) asignarPuntosAuto(equipoControl, nuevasReveladas);
+              
+              setRespuestasProcesadas(p => p + 1); 
+            } else {
+              setStrikes(prev => {
+                if (prev + 1 >= 3) setFase('robo');
+                return prev + 1;
+              });
+              setRespuestasProcesadas(p => p + 1); 
+            }
+          }
+          else if (fase === 'robo' && equipo !== equipoControl) {
+            if (aciertoIndex !== -1) {
+              const nuevasReveladas = [...reveladas];
+              nuevasReveladas[aciertoIndex] = true;
+              setReveladas(nuevasReveladas);
+              // ROBO EXITOSO: Pasamos el arreglo nuevo para que sume la palabra adivinada
+              asignarPuntosAuto(equipo, nuevasReveladas); 
+            } else {
+              // ROBO FALLIDO: El equipo original se queda los puntos actuales
+              asignarPuntosAuto(equipoControl, reveladas); 
+            }
+            setRespuestasProcesadas(p => p + 1); 
           }
 
-          const comandoLimpieza = new UpdateCommand({
-            TableName: "Partidas_100Mexicanos",
-            Key: { pinSala: pinSala },
-            UpdateExpression: "REMOVE intentoAdivinar"
-          });
-          await docClient.send(comandoLimpieza);
+          await docClient.send(new UpdateCommand({
+            TableName: "Partidas_100Mexicanos", Key: { pinSala }, UpdateExpression: "REMOVE intentoAdivinar"
+          }));
         }
-      } catch (error) {
-        console.error("❌ Error en el motor de juego:", error);
-      }
+      } catch (e) { console.error(e); }
     };
-
-    const radar = setInterval(motorDeJuego, 1500);
+    const radar = setInterval(motorDeJuego, 1000);
     return () => clearInterval(radar);
-  }, [pinSala, ronda]);
+  }, [pinSala, ronda, fase, equipoControl, reveladas, intentoCaraACara, puntajesGlobales]);
 
-  // 3. SINCRONIZADOR (Espejo hacia los celulares)
   useEffect(() => {
     if (!pinSala) return;
     const compartirTablero = async () => {
       try {
-        const comando = new UpdateCommand({
-          TableName: "Partidas_100Mexicanos",
-          Key: { pinSala: pinSala },
+        await docClient.send(new UpdateCommand({
+          TableName: "Partidas_100Mexicanos", Key: { pinSala },
           UpdateExpression: "SET tablero = :tab",
-          ExpressionAttributeValues: {
-            ":tab": { reveladas: reveladas, strikes: strikes }
-          }
-        });
-        await docClient.send(comando);
-      } catch (error) {
-        console.error("Error sincronizando tablero:", error);
-      }
+          // ENVIAMOS LA BANDERA DE FIN DE JUEGO A LOS CELULARES
+          ExpressionAttributeValues: { ":tab": { reveladas, strikes, fase, equipoControl, jugadorA, jugadorB, mensajeCaraACara, respuestasProcesadas, esFinDeJuego } }
+        }));
+      } catch (error) { console.error(error); }
     };
     compartirTablero();
-  }, [reveladas, strikes, pinSala]);
+  }, [reveladas, strikes, fase, equipoControl, pinSala, jugadorA, jugadorB, mensajeCaraACara, respuestasProcesadas, esFinDeJuego]);
 
-
-  // ==========================================
-  // ZONA DE FUNCIONES Y RENDERIZADO
-  // ==========================================
-
-  const voltearCasilla = (index) => {
-    const nuevas = [...reveladas];
-    nuevas[index] = true;
-    setReveladas(nuevas);
+  const avanzarSiguienteRonda = async () => {
+    const nextIdx = salaDB.indiceRondaActual + 1;
+    if (nextIdx < salaDB.rondas.length) {
+      const nextRonda = salaDB.rondas[nextIdx];
+      try {
+        await docClient.send(new UpdateCommand({
+          TableName: "Partidas_100Mexicanos", Key: { pinSala },
+          UpdateExpression: "SET indiceRondaActual = :idx, rondaActiva = :ra",
+          ExpressionAttributeValues: { ":idx": nextIdx, ":ra": nextRonda }
+        }));
+        
+        setSalaDB({ ...salaDB, indiceRondaActual: nextIdx });
+        setRonda(nextRonda);
+        setReveladas([false, false, false, false, false]);
+        setStrikes(0);
+        setFase('enfrentamiento');
+        setEquipoControl(null);
+        setRespuestasProcesadas(p => p + 1); 
+      } catch (e) { console.error(e); }
+    }
   };
 
-  const agregarStrike = () => {
-    if (strikes < 3) setStrikes(strikes + 1);
-  };
-
-  // EL RETURN CONDICIONAL (Debe ir después de todos los useEffect)
-  if (!ronda) return <h2 className="magenta-title text-center" style={{marginTop: '20vh'}}>Cargando Tablero...</h2>;
+  if (!ronda) return <h2 className="magenta-title text-center" style={{marginTop: '20vh'}}>Cargando...</h2>;
 
   return (
-    <div className="host-container sin-scroll" style={{ height: '85vh', justifyContent: 'space-between', paddingTop: '1rem', paddingBottom: '1rem' }}>
-      
-      <div style={{ textAlign: 'center', padding: '0 1rem' }}>
-        <h2 style={{ color: '#fff', fontSize: 'clamp(1.5rem, 4vh, 2.5rem)', textShadow: '0 0 15px #00f2ff', margin: 0, lineHeight: '1.2' }}>
-          {ronda.pregunta}
-        </h2>
+    <div className="host-container sin-scroll" style={{ height: '95vh', justifyContent: 'flex-start', paddingTop: '1rem' }}>
+      <div style={{ backgroundColor: '#111', padding: '10px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', border: '1px solid #ff00ff' }}>
+        <div>
+          <span style={{ color: '#00f2ff', fontWeight: 'bold' }}>FASE: </span>
+          <span style={{ color: '#fff', textTransform: 'uppercase' }}>{fase === 'control' ? `CONTROL DE ${equipoControl}` : fase}</span>
+        </div>
+        
+        {fase === 'enfrentamiento' && <span style={{color: '#ff00ff', fontWeight: 'bold'}}>⚔️ {jugadorA} VS {jugadorB} ⚔️</span>}
+        {mensajeCaraACara && <span style={{color: '#ffff00', animation: 'pulso 1s infinite'}}>{mensajeCaraACara}</span>}
+        
+        {fase === 'resumen' && (
+          !esFinDeJuego ? 
+          <button className="start-btn neon-btn" onClick={avanzarSiguienteRonda} style={{padding: '5px 15px'}}>Siguiente Ronda ({salaDB.indiceRondaActual + 2}/{salaDB.rondas.length}) ➡</button> :
+          <span style={{ color: '#ff0000', fontWeight: 'bold', fontSize: '1.2rem', animation: 'pulso 1s infinite' }}>🏆 FIN DE PARTIDA 🏆</span>
+        )}
+      </div>
+
+      <div style={{ textAlign: 'center', padding: '0 1rem', marginBottom: '1rem' }}>
+        <h2 style={{ color: '#fff', fontSize: 'clamp(1.5rem, 4vh, 2.5rem)', textShadow: '0 0 15px #00f2ff', margin: 0, lineHeight: '1.2' }}>{ronda.pregunta}</h2>
       </div>
 
       <div className="tablero-grid" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.5rem, 1.5vh, 1rem)', maxWidth: '800px', margin: '0 auto', width: '100%', padding: '0 1rem' }}>
         {ronda.respuestas.map((resp, index) => {
           if (!resp.texto) return null; 
+          const revelada = reveladas[index];
+          const mostrarFaltante = fase === 'resumen' && !revelada; 
 
           return (
-            <div 
-              key={index} 
-              className={`casilla-respuesta ${reveladas[index] ? 'revelada' : 'oculta'}`}
-              onClick={() => voltearCasilla(index)}
-            >
-              <div className="casilla-frente">
-                <span className="casilla-numero">{index + 1}</span>
-              </div>
+            <div key={index} className={`casilla-respuesta ${revelada || mostrarFaltante ? 'revelada' : 'oculta'}`} 
+                 style={mostrarFaltante ? { backgroundColor: '#330033', borderColor: '#555', boxShadow: 'none' } : {}}>
+              <div className="casilla-frente"><span className="casilla-numero">{index + 1}</span></div>
               <div className="casilla-dorso" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: '0 2rem' }}>
-                <span className="respuesta-texto">{resp.texto}</span>
-                <span className="respuesta-puntos">{resp.puntos}</span>
+                <span className="respuesta-texto" style={mostrarFaltante ? { color: '#aaa', textShadow: 'none' } : {}}>{resp.texto}</span>
+                <span className="respuesta-puntos" style={mostrarFaltante ? { color: '#aaa', textShadow: 'none' } : {}}>{resp.puntos}</span>
               </div>
             </div>
           );
         })}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2rem' }}>
-        <div style={{ display: 'flex', gap: '1rem', cursor: 'pointer' }} onClick={agregarStrike}>
-          {[1, 2, 3].map((num) => (
-            <div key={num} className={`strike-box ${num <= strikes ? 'strike-activo' : ''}`}>
-              X
-            </div>
-          ))}
-        </div>
-        <button className="volver-btn" onClick={() => setStrikes(0)}>Limpiar X</button>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem' }}>
+        {[1, 2, 3].map((num) => (<div key={num} className={`strike-box ${num <= strikes ? 'strike-activo' : ''}`}>X</div>))}
       </div>
 
+      <div style={{ backgroundColor: '#0a0a0a', border: '1px solid #ff00ff', borderRadius: '10px', padding: '1rem', marginTop: '2rem', textAlign: 'center' }}>
+        <h3 style={{ color: '#ff00ff', margin: 0, letterSpacing: '2px' }}>BANCO ACUMULADO DE LA RONDA: {puntosRonda} pts</h3>
+      </div>
     </div>
   );
 }
@@ -624,111 +807,208 @@ function PantallaJuegoHost() {
 // --- COMPONENTE 5: ZONA DE RESPUESTAS (Equipo) ---
 function PantallaJuegoEquipo() {
   const location = useLocation();
-  const { pinSala, nombreEquipo } = location.state || {};
-
+  const { pinSala, nombreEquipo, nombreJugador } = location.state || {};
+  
   const [ronda, setRonda] = useState(null);
-  const [tablero, setTablero] = useState({ reveladas: [], strikes: 0 });
+  const [tablero, setTablero] = useState({ reveladas: [], strikes: 0, fase: 'enfrentamiento', equipoControl: null, jugadorA: '', jugadorB: '', mensajeCaraACara: '', respuestasProcesadas: 0, esFinDeJuego: false });
+  
   const [respuesta, setRespuesta] = useState('');
   const [enviado, setEnviado] = useState(false);
+  
+  const [ultimoProcesadoLocal, setUltimoProcesadoLocal] = useState(0); 
+  const [idRondaActual, setIdRondaActual] = useState(''); 
+  
+  // AHORA GUARDAMOS TODOS LOS PUNTAJES PARA PODER COMPARARLOS AL FINAL
+  const [puntajesGlobales, setPuntajesGlobales] = useState({});
 
-  // RADAR DEL JUGADOR: Lee la ronda y el estado del tablero cada 1.5 segundos
+  // RADAR DEL JUGADOR
   useEffect(() => {
     if (!pinSala) return;
     const radar = setInterval(async () => {
       try {
-        const comando = new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala: pinSala }});
-        const res = await docClient.send(comando);
+        const cmd = new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala }});
+        const res = await docClient.send(cmd);
         if (res.Item) {
-          if (res.Item.rondaActiva) setRonda(res.Item.rondaActiva);
-          if (res.Item.tablero) setTablero(res.Item.tablero); // Descargamos el espejo
+          if (res.Item.rondaActiva) {
+            setRonda(res.Item.rondaActiva);
+            if (res.Item.rondaActiva.pregunta !== idRondaActual) {
+              setEnviado(false);
+              setRespuesta('');
+              setIdRondaActual(res.Item.rondaActiva.pregunta);
+            }
+          }
+          if (res.Item.tablero) {
+            setTablero(res.Item.tablero);
+            if (res.Item.tablero.respuestasProcesadas !== ultimoProcesadoLocal) {
+              setEnviado(false); 
+              setRespuesta(''); 
+              setUltimoProcesadoLocal(res.Item.tablero.respuestasProcesadas); 
+            }
+          }
+          if (res.Item.puntajesGlobales) {
+            setPuntajesGlobales(res.Item.puntajesGlobales);
+          }
         }
-      } catch (error) {
-        console.error("Error en radar de equipo", error);
-      }
-    }, 1500);
+      } catch (error) { console.error("Error radar", error); }
+    }, 1000);
     return () => clearInterval(radar);
-  }, [pinSala]);
+  }, [pinSala, nombreEquipo, ultimoProcesadoLocal, idRondaActual]);
 
   const enviarRespuesta = async (e) => {
     e.preventDefault();
     if (!respuesta.trim()) return;
-
     try {
-      const comando = new UpdateCommand({
-        TableName: "Partidas_100Mexicanos",
-        Key: { pinSala: pinSala },
+      await docClient.send(new UpdateCommand({
+        TableName: "Partidas_100Mexicanos", Key: { pinSala },
         UpdateExpression: "SET intentoAdivinar = :resp",
-        ExpressionAttributeValues: { ":resp": respuesta.trim().toUpperCase() }
-      });
-
-      await docClient.send(comando);
+        ExpressionAttributeValues: { ":resp": { equipo: nombreEquipo, texto: respuesta.trim().toUpperCase() } }
+      }));
       setEnviado(true);
-      setRespuesta('');
-      setTimeout(() => setEnviado(false), 2500);
-    } catch (error) {
-      console.error("Error", error);
-    }
+    } catch (error) { console.error(error); }
   };
 
   if (!pinSala || !ronda) return <h2 className="magenta-title" style={{marginTop: '20vh'}}>Sincronizando...</h2>;
 
-  // Calculamos los puntos en tiempo real sumando las respuestas que ya están reveladas
-  const puntosAcumulados = ronda.respuestas.reduce((total, resp, index) => {
-    return tablero.reveladas[index] ? total + (resp.puntos || 0) : total;
-  }, 0);
+  // ==========================================
+  // PANTALLA DE VICTORIA (INTERCEPCIÓN DE FIN DE JUEGO)
+  // ==========================================
+  if (tablero.esFinDeJuego) {
+    const equiposNombres = Object.keys(puntajesGlobales);
+    let eq1 = equiposNombres[0] || 'Equipo A';
+    let eq2 = equiposNombres[1] || 'Equipo B';
+    let pts1 = puntajesGlobales[eq1] || 0;
+    let pts2 = puntajesGlobales[eq2] || 0;
+    
+    let ganador = eq1; let ptsGanador = pts1;
+    let perdedor = eq2; let ptsPerdedor = pts2;
+    let empate = false;
+
+    // Lógica para descubrir quién ganó
+    if (pts2 > pts1) { ganador = eq2; ptsGanador = pts2; perdedor = eq1; ptsPerdedor = pts1; }
+    else if (pts1 === pts2) { empate = true; }
+
+    return (
+      <div className="equipo-container sin-scroll" style={{ justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+        <h1 style={{ color: '#ffd700', fontSize: '3rem', animation: 'pulso 2s infinite', textShadow: '0 0 20px #ffd700', margin: 0 }}>
+          🏆 FIN DE PARTIDA 🏆
+        </h1>
+        
+        <div style={{ backgroundColor: '#111', padding: '2rem', borderRadius: '15px', border: '2px solid #ff00ff', marginTop: '3rem', boxShadow: '0 0 30px rgba(255, 0, 255, 0.3)' }}>
+          {empate ? (
+            <h2 style={{ color: '#00f2ff', fontSize: '2rem', margin: 0 }}>¡ES UN EMPATE!<br/><br/><span style={{fontSize: '3rem'}}>{ptsGanador} pts</span></h2>
+          ) : (
+            <>
+              <h2 style={{ color: '#00ff00', fontSize: '2.5rem', margin: '0 0 1rem 0', textShadow: '0 0 15px #00ff00' }}>
+                🥇 {ganador}<br/>{ptsGanador} pts
+              </h2>
+              <hr style={{ borderColor: '#333', margin: '1.5rem 0' }} />
+              <h3 style={{ color: '#ff0000', fontSize: '1.5rem', margin: 0 }}>
+                💀 {perdedor}<br/>{ptsPerdedor} pts
+              </h3>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // PANTALLA NORMAL DE JUEGO
+  // ==========================================
+  const puntosRonda = ronda.respuestas.reduce((total, resp, index) => tablero.reveladas[index] ? total + (resp.puntos || 0) : total, 0);
+
+  // MÁQUINA DE ESTADOS LOCAL
+  let esMiTurno = false;
+  let mensajeEstado = "";
+
+  if (tablero.fase === 'enfrentamiento') {
+    const miNombreMayusculas = nombreJugador ? nombreJugador.toUpperCase() : '';
+    esMiTurno = (miNombreMayusculas === tablero.jugadorA || miNombreMayusculas === tablero.jugadorB);
+
+    if (esMiTurno) {
+      if (tablero.mensajeCaraACara === "❌ AMBOS FALLARON ❌") {
+        mensajeEstado = tablero.mensajeCaraACara;
+      } else if (enviado) {
+        mensajeEstado = "Respuesta registrada. Esperando al oponente...";
+      } else {
+        mensajeEstado = "¡ES TU TURNO EN EL CARA A CARA!";
+      }
+    } else {
+      mensajeEstado = `CARA A CARA: ${tablero.jugadorA} vs ${tablero.jugadorB}`;
+    }
+
+  } else if (tablero.fase === 'control') {
+    esMiTurno = (nombreEquipo === tablero.equipoControl);
+    mensajeEstado = esMiTurno ? "¡ES TURNO DE TU EQUIPO!" : `TURNO DE ${tablero.equipoControl}`;
+  } else if (tablero.fase === 'robo') {
+    esMiTurno = (nombreEquipo !== tablero.equipoControl);
+    mensajeEstado = esMiTurno ? "🚨 ¡OPORTUNIDAD DE ROBO! 🚨" : "EL EQUIPO RIVAL INTENTA ROBAR...";
+  } else if (tablero.fase === 'resumen') {
+    esMiTurno = false;
+    mensajeEstado = "🏁 RONDA TERMINADA - ESPERANDO AL HOST 🏁";
+  }
 
   return (
     <div className="equipo-container sin-scroll" style={{ justifyContent: 'flex-start', paddingTop: '1rem', height: '100vh', paddingBottom: '2rem' }}>
       
-      {/* HEADER: Nombre y Puntos */}
+      {/* HEADER DE PUNTOS */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid #ff00ff', paddingBottom: '0.5rem' }}>
-        <h3 style={{ color: '#00f2ff', margin: 0 }}>{nombreEquipo}</h3>
-        <h3 style={{ color: '#ff00ff', margin: 0 }}>Ronda: {puntosAcumulados} pts</h3>
+        <div style={{ textAlign: 'left' }}>
+          <h3 style={{ color: '#00f2ff', margin: 0 }}>{nombreEquipo}</h3>
+          <span style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 'bold' }}>TOTAL: <span style={{ color: '#00f2ff' }}>{puntajesGlobales[nombreEquipo] || 0} pts</span></span>
+        </div>
+        <h3 style={{ color: '#ff00ff', margin: 0 }}>Ronda: {puntosRonda} pts</h3>
       </div>
 
-      {/* LA PREGUNTA */}
-      <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-        <h2 style={{ color: '#fff', fontSize: '1.2rem', margin: 0 }}>{ronda.pregunta}</h2>
+      {/* ¡LA PREGUNTA HA VUELTO! */}
+      <div style={{ textAlign: 'center', marginBottom: '1rem', padding: '0 10px' }}>
+        <h2 style={{ color: '#fff', fontSize: '1.2rem', margin: 0, textShadow: '0 0 10px #00f2ff' }}>
+          {ronda.pregunta}
+        </h2>
       </div>
 
-      {/* STRIKES Y MINI-TABLERO (Espejo) */}
+      {/* CAJA DE MENSAJES DE ESTADO */}
+      <div style={{ textAlign: 'center', marginBottom: '1rem', backgroundColor: esMiTurno ? '#0a2a0a' : '#2a0a0a', padding: '10px', borderRadius: '8px', border: `1px solid ${esMiTurno ? '#00ff00' : '#ff0000'}` }}>
+        <h4 style={{ color: esMiTurno ? '#00ff00' : '#ff0000', margin: 0, animation: tablero.mensajeCaraACara ? 'pulso 1s infinite' : 'none' }}>
+          {mensajeEstado}
+        </h4>
+      </div>
+
+      {/* STRIKES */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '5px', marginBottom: '1rem' }}>
-        {[1, 2, 3].map(num => (
-          <span key={num} style={{ fontSize: '1.5rem', color: num <= tablero.strikes ? '#ff0000' : '#333', fontWeight: 'bold' }}>
-            X
-          </span>
-        ))}
+        {[1, 2, 3].map(num => (<span key={num} style={{ fontSize: '1.5rem', color: num <= tablero.strikes ? '#ff0000' : '#333', fontWeight: 'bold' }}>X</span>))}
       </div>
 
+      {/* TABLERO CELULAR */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '2rem', flexGrow: 1, overflowY: 'auto' }} className="banco-scroll">
         {ronda.respuestas.map((resp, index) => {
           if (!resp.texto) return null;
           const revelada = tablero.reveladas[index];
-          
+          const mostrarFaltante = tablero.fase === 'resumen' && !revelada;
+
           return (
             <div key={index} style={{ 
               display: 'flex', justifyContent: 'space-between', padding: '10px 15px', 
-              backgroundColor: revelada ? '#00f2ff' : '#0a0a0a', 
-              color: revelada ? '#000' : '#00f2ff',
-              border: `1px solid ${revelada ? '#00f2ff' : '#333'}`,
+              backgroundColor: revelada ? '#00f2ff' : (mostrarFaltante ? '#330033' : '#0a0a0a'), 
+              color: revelada ? '#000' : (mostrarFaltante ? '#aaa' : '#00f2ff'),
+              border: `1px solid ${revelada ? '#00f2ff' : (mostrarFaltante ? '#555' : '#333')}`, 
               borderRadius: '5px', fontWeight: 'bold'
             }}>
-              <span>{revelada ? resp.texto : index + 1}</span>
-              <span>{revelada ? resp.puntos : '--'}</span>
+              <span>{revelada || mostrarFaltante ? resp.texto : index + 1}</span>
+              <span>{revelada || mostrarFaltante ? resp.puntos : '--'}</span>
             </div>
           );
         })}
       </div>
 
-      {/* FORMULARIO DE ENVÍO */}
+      {/* FORMULARIO */}
       <form onSubmit={enviarRespuesta} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}>
-        <input
-          type="text" className="neon-input-magenta" placeholder="Escribe aquí..."
-          value={respuesta} onChange={(e) => setRespuesta(e.target.value)} disabled={enviado}
-          style={{ fontSize: '1.2rem', padding: '1rem', textAlign: 'center' }}
+        <input type="text" className="neon-input-magenta" placeholder={esMiTurno ? "Escribe aquí..." : "Espera tu turno..."}
+          value={respuesta} onChange={(e) => setRespuesta(e.target.value)} disabled={enviado || !esMiTurno}
+          style={{ fontSize: '1.2rem', padding: '1rem', textAlign: 'center', opacity: esMiTurno ? 1 : 0.5 }}
         />
-        <button type="submit" className="neon-btn start-btn" disabled={enviado || !respuesta.trim()} style={{ padding: '1rem', fontSize: '1.1rem' }}>
-          {enviado ? "ENVIANDO..." : "ENVIAR RESPUESTA"}
+        <button type="submit" className={`neon-btn ${esMiTurno ? 'start-btn' : 'start-btn-disabled'}`} disabled={enviado || !esMiTurno || !respuesta.trim()} style={{ padding: '1rem', fontSize: '1.1rem' }}>
+          {enviado ? "RESPUESTA REGISTRADA" : "ENVIAR RESPUESTA"}
         </button>
       </form>
     </div>
