@@ -1,39 +1,62 @@
 import { PutCommand, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { docClient } from './dynamo';
 import { useState, useEffect } from 'react';
-import { Authenticator } from '@aws-amplify/ui-react';
+import { Authenticator, translations } from '@aws-amplify/ui-react';
+import { I18n } from 'aws-amplify/utils'; // Si usas la versión más reciente (v6)
+// Nota: Si te marca error el renglón de arriba, cámbialo por: import { I18n } from 'aws-amplify';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import '@aws-amplify/ui-react/styles.css'; 
 import './App.css';
 
-// Definimos qué campos queremos en el registro
+// Configuración de traducciones para el componente Authenticator (Amplify UI)
+I18n.putVocabularies(translations);
+// Aquí puedes personalizar aún más los textos específicos de los campos de autenticación
+I18n.putVocabularies({
+  es: {
+    'Email': 'Correo electrónico:',
+    'Enter your Email': 'ejemplo@correo.com',
+    'Password': 'Contraseña:',
+    'Enter your Password': 'Escribe tu contraseña',
+    'Forgot your password?': '¿Olvidaste tu contraseña?'
+  }
+});
+// Establecemos el idioma global a español
+I18n.setLanguage('es');
+
+// Configuración de campos personalizados para el proceso de registro (sign up) en el Authenticator
 const formFields = {
+  // Configuración de campos para el proceso de registro (sign up)
   signUp: {
+    // Agregamos un campo personalizados para el nombre real del jugador
     given_name: {
       label: 'Nombre Real:',
       placeholder: 'Escribe tu nombre y apellido',
       isRequired: true,
       order: 1
     },
-    username: { // Este es el campo que Cognito usa para el login (Email)
+    // El campo de email es obligatorio y se usará como loginId en Cognito, pero lo renombramos para que suene más amigable
+    email: { // Este es el campo que Cognito usa para el login (Email)
       label: 'Correo electrónico:',
       placeholder: 'ejemplo@correo.com',
       isRequired: true,
       order: 2
     },
+    // El campo de contraseña también es obligatorio, pero lo personalizamos para que suene más divertido
     password: {
       label: 'Contraseña:',
-      placeholder: 'Crea una contraseña segura',
+      placeholder: 'Crea una contraseña',
       order: 3
     },
+    // Agregamos un campo para confirmar la contraseña, aunque Cognito no lo requiere, es una buena práctica para evitar errores de tipeo
     confirm_password: {
       label: 'Confirmar Contraseña:',
       placeholder: 'Repite tu contraseña',
       order: 4
     },
+    // Finalmente, agregamos un campo para el nickname o nombre de usuario que se mostrará en el juego, este será el "alias" del jugador dentro de la partida
     preferred_username: { // Este será tu Nickname oficial
-      label: 'Nickname (Nombre de usuario):',
-      placeholder: '¿Cómo quieres que te vean en el tablero?',
+      label: 'Nombre de usuario:',
+      placeholder: 'Nickname',
       isRequired: true,
       order: 5
     }
