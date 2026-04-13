@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Authenticator, translations } from '@aws-amplify/ui-react';
 import { I18n } from 'aws-amplify/utils'; // Si usas la versión más reciente (v6)
 // Nota: Si te marca error el renglón de arriba, cámbialo por: import { I18n } from 'aws-amplify';
+import { fetchUserAttributes } from 'aws-amplify/auth';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import '@aws-amplify/ui-react/styles.css'; 
 import './App.css';
@@ -65,18 +66,46 @@ const formFields = {
 
 // --- COMPONENTE 1: EL LOBBY (Sala de espera) ---
 function LobbyPrincipal({ user, signOut }) {
+  // Aquí es donde mostraremos el nickname del jugador, que se obtiene de los atributos del usuario en Cognito
   const navigate = useNavigate();
+  const [nickname, setNickname] = useState('Jugador');
+  
+  // Al cargar el componente, hacemos una consulta a Cognito para obtener los atributos del usuario autenticado, específicamente el preferred_username que configuramos en el registro
+  useEffect(() => {
+    const cargarAtributos = async () => {
+      try {
+        // fetchUserAttributes es una función de Amplify Auth que nos devuelve un objeto con todos los atributos del usuario, incluyendo el preferred_username que configuramos en el proceso de registro
+        const atributos = await fetchUserAttributes();
 
+        // Buscamos el preferred_username que configuramos en el registro
+        if (atributos.preferred_username) {
+          setNickname(atributos.preferred_username);
+        }
+      } catch (error) {
+        console.error("Error al obtener atributos del usuario:", error);
+      }
+    };
+
+    cargarAtributos();
+  }, []);
+
+  // RENDERIZADO DEL LOBBY PRINCIPAL
   return (
+    // Contenedor principal del lobby, con un diseño de dos columnas para las opciones de Host y Jugador
     <div className="lobby-container">
       {/* HEADER: Título a la izquierda, Usuario/Botón a la derecha */}
       <header className="lobby-header">
+        {/* TÍTULO DEL JUEGO */}
         <h1 className="lobby-title">100 MEXICANOS DIJERON</h1>
 
+        {/* PANEL DE USUARIO: Muestra el nickname del jugador y un botón para cerrar sesión */}
         <div className="user-panel">
+          {/* Mostramos el nickname del jugador, si no se encuentra, mostramos el loginId o un genérico "Jugador" */}
           <span className="user-name">
-            👤 {user?.userId?.preferred_username || user?.signInDetails?.loginId || 'Jugador'}
+            👤 {nickname || user?.signInDetails?.loginId || 'Jugador'}
           </span>
+
+          {/*} BOTÓN DE CERRAR SESIÓN */}
           <button onClick={signOut} className="neon-btn logout-btn">
             Salir
           </button>
@@ -88,8 +117,15 @@ function LobbyPrincipal({ user, signOut }) {
 
         {/* TARJETA IZQUIERDA: CREAR PARTIDA (Host) */}
         <div className="neon-card host-card">
+          {/* TÍTULO */}
           <h2 className="card-title">Modo Host</h2>
-          <p className="card-desc">Crea una nueva sala y muestra el tablero principal en la pantalla grande.</p>
+
+          {/* DESCRIPCIÓN */}
+          <p className="card-desc">
+            Crea una nueva sala y muestra el tablero principal en la pantalla grande.
+          </p>
+
+          {/* BOTÓN PARA CREAR PARTIDA (Navega a la pantalla de configuración del Host) */}
           <button onClick={() => navigate('/config-ronda')} className="neon-btn host-btn">
             Crear Partida
           </button>
@@ -97,13 +133,19 @@ function LobbyPrincipal({ user, signOut }) {
 
         {/* TARJETA DERECHA: UNIRSE A PARTIDA (Equipos) */}
         <div className="neon-card join-card">
+          {/* TÍTULO */}
           <h2 className="card-title">Unirse a Equipo</h2>
-          <p className="card-desc">Ve a la zona de votación para ingresar el PIN de la sala y registrar a tu equipo.</p>
+
+          {/* DESCRIPCIÓN */}
+          <p className="card-desc">
+            Ve a la zona de votación para ingresar el PIN de la sala y registrar a tu equipo.
+          </p>
+
+          {/* BOTÓN PARA UNIRSE A PARTIDA (Navega a la pantalla de unión de jugadores) */}
           <button onClick={() => navigate('/votacion')} className="neon-btn join-btn">
-            Entrar a Votar
+            Entrar a Jugar
           </button>
         </div>
-
       </div>
     </div>
   );
