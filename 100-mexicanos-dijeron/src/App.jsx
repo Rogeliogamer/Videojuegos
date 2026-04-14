@@ -1,4 +1,4 @@
-import { PutCommand, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, GetCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { docClient } from './dynamo';
 import { useState, useEffect } from 'react';
 import { Authenticator, translations } from '@aws-amplify/ui-react';
@@ -156,61 +156,128 @@ import { BANCO_PREGUNTAS } from './preguntas';
 function PantallaConfiguracion() {
   const navigate = useNavigate();
 
-  // 1. Estados de Configuración
+  // 1. Estados de Configuración de la Partida
   const [nombreEquipoA, setNombreEquipoA] = useState('EQUIPO 1');
   const [nombreEquipoB, setNombreEquipoB] = useState('EQUIPO 2');
   const [numRondas, setNumRondas] = useState(3);
   const [rondasSeleccionadas, setRondasSeleccionadas] = useState([]);
 
-  // Estados para Pregunta Personalizada
+  // 2. Estados del Banco de Datos (DynamoDB)
+  const [bancoPreguntas, setBancoPreguntas] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  // 3. Estados para Preguntas Personalizadas "al vuelo"
   const [customPregunta, setCustomPregunta] = useState('');
   const [customRespuestas, setCustomRespuestas] = useState(
     Array(5).fill({ texto: '', puntos: 0 })
   );
 
-  // 2. Lógica de Selección de Preguntas (Máximo N rondas)
+  // --- EFECTO: DESCARGAR BANCO DESDE DOCKER ---
+  useEffect(() => {
+    const fetchPreguntas = async () => {
+      try {
+        setCargando(true);
+        // Traemos todo el banco de preguntas de la tabla local
+        const data = await docClient.send(new ScanCommand({
+          TableName: "Preguntas_100Mexicanos"
+        }));
+
+        if (data.Items) {
+          setBancoPreguntas(data.Items);
+        }
+      } catch (error) {
+        console.error("Error al conectar con DynamoDB Local:", error);
+      } finally {
+        setCargando(false);
+      }
+    };
+    fetchPreguntas();
+  }, []);
+
+  // --- LÓGICA DE SELECCIÓN (Toggle) ---
   const togglePreguntaBanco = (p) => {
-    if (rondasSeleccionadas.find(r => r.id === p.id)) {
+    const existe = rondasSeleccionadas.find(r => r.id === p.id);
+
+    if (existe) {
       setRondasSeleccionadas(rondasSeleccionadas.filter(r => r.id !== p.id));
     } else {
       if (rondasSeleccionadas.length < numRondas) {
         setRondasSeleccionadas([...rondasSeleccionadas, p]);
       } else {
-        alert(`Ya seleccionaste las ${numRondas} rondas permitidas.`);
+        alert(`Límite alcanzado: Has configurado el juego para ${numRondas} rondas.`);
       }
     }
   };
 
+  // --- ALGORITMO AUTO-CORRECTOR EN CASCADA ---
+  const handlePuntosChange = (index, valor) => {
+    let val = parseInt(valor) || 0;
+    let nuevas = [...customRespuestas];
+
+    // 1. Regla básica: Limitar entre 0 y 100
+    val = Math.max(0, Math.min(100, val));
+
+    // 2. Regla de Orden: No puede ser mayor a la respuesta de arriba
+    if (index > 0 && val > nuevas[index - 1].puntos) {
+      val = nuevas[index - 1].puntos;
+    }
+
+    // 3. Límite de Suma: No exceder los 100 puntos en total
+    const sumaOtros = nuevas.reduce((acc, r, i) => acc + (i !== index ? r.puntos : 0), 0);
+    if (sumaOtros + val > 100) {
+      val = 100 - sumaOtros;
+    }
+
+    nuevas[index].puntos = val;
+
+    // 4. Efecto Cascada: Ajustar los de abajo si el actual bajó demasiado
+    for (let i = index + 1; i < 5; i++) {
+      if (nuevas[i].puntos > nuevas[i - 1].puntos) {
+        nuevas[i].puntos = nuevas[i - 1].puntos;
+      }
+    }
+
+    setCustomRespuestas(nuevas);
+  };
+
+  // Variable de apoyo para mostrar en la interfaz
+  const sumaActualPuntos = customRespuestas.reduce((acc, r) => acc + r.puntos, 0);
+
   const agregarPersonalizada = () => {
-    // Validación: Pregunta y 5 respuestas con puntos
-    const validas = customRespuestas.filter(r => r.texto.trim() !== '' && r.puntos > 0);
+    const validas = customRespuestas.filter(r => r.texto.trim() !== ''); // Validar que tengan texto
+
     if (!customPregunta || validas.length < 5) {
-      alert("Para una ronda personalizada necesitas la pregunta y las 5 respuestas con sus puntos.");
+      alert("Faltan datos. Debes escribir la pregunta y las 5 respuestas.");
       return;
     }
 
-    const nuevaRonda = {
-      id: Date.now(),
-      pregunta: customPregunta,
+    // NUEVA VALIDACIÓN: Deben sumar exactamente 100
+    if (sumaActualPuntos !== 100) {
+      alert(`Los puntos deben sumar exactamente 100. Actualmente suman ${sumaActualPuntos}.`);
+      return;
+    }
+    
+    const nueva = {
+      id: `custom-${Date.now()}`,
+      pregunta: customPregunta.toUpperCase(),
       respuestas: customRespuestas
     };
 
     if (rondasSeleccionadas.length < numRondas) {
-      setRondasSeleccionadas([...rondasSeleccionadas, nuevaRonda]);
+      setRondasSeleccionadas([...rondasSeleccionadas, nueva]);
       setCustomPregunta('');
       setCustomRespuestas(Array(5).fill({ texto: '', puntos: 0 }));
     } else {
-      alert("Ya completaste el número de rondas.");
+      alert("Ya no puedes agregar más rondas a esta partida.");
     }
   };
 
-  const crearPartidaFinal = () => {
+  const iniciarPartida = () => {
     if (rondasSeleccionadas.length < numRondas) {
-      alert(`Faltan ${numRondas - rondasSeleccionadas.length} rondas por configurar.`);
+      alert(`Debes seleccionar o crear ${numRondas - rondasSeleccionadas.length} rondas más.`);
       return;
     }
 
-    // Saltamos al tablero enviando el "Mega Objeto" de configuración
     navigate('/tablero', {
       state: {
         config: {
@@ -224,69 +291,91 @@ function PantallaConfiguracion() {
   };
 
   return (
-    <div className="host-container sin-scroll" style={{ overflowY: 'auto', maxHeight: '95vh', justifyContent: 'flex-start' }}>
+    <div className="host-container sin-scroll" style={{ overflowY: 'auto', maxHeight: '100vh', paddingTop: '2rem' }}>
       <h2 className="magenta-title">CONFIGURACIÓN DE PARTIDA</h2>
       
-      <div className="config-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+      <div className="config-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', padding: '0 2rem' }}>
         
-        {/* LADO IZQUIERDO: EQUIPOS Y RONDAS */}
-        <section className="crear-section">
-          <h3 style={{ color: '#00f2ff' }}>1. Equipos y Rondas</h3>
+        {/* COLUMNA IZQUIERDA: EQUIPOS Y PERSONALIZADAS */}
+        <section>
+          <h3 style={{ color: '#00f2ff' }}>1. Datos Generales</h3>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
-            <input className="neon-input-magenta" placeholder="Nombre Equipo A" onChange={e => setNombreEquipoA(e.target.value)} />
-            <input className="neon-input-magenta" placeholder="Nombre Equipo B" onChange={e => setNombreEquipoB(e.target.value)} />
+            <input className="neon-input-magenta" placeholder="Equipo A" onChange={e => setNombreEquipoA(e.target.value)} />
+            <input className="neon-input-magenta" placeholder="Equipo B" onChange={e => setNombreEquipoB(e.target.value)} />
           </div>
-          <div style={{ marginBottom: '1rem' }}>
-            <label>Número de Rondas (1-5): </label>
+
+          <div style={{ marginBottom: '2rem' }}>
+            <label>Rondas totales: </label>
             <input type="number" min="1" max="5" value={numRondas} className="neon-input-magenta" style={{ width: '60px', marginLeft: '10px' }} 
                    onChange={e => setNumRondas(parseInt(e.target.value))} />
           </div>
 
-          <h3 style={{ color: '#ff00ff' }}>2. Pregunta Personalizada</h3>
-          <input className="neon-input-magenta" placeholder="Pregunta..." value={customPregunta} onChange={e => setCustomPregunta(e.target.value)} />
+          <h3 className="magenta-text" style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span>2. Crear Ronda Especial</span>
+            {/* NUEVO: Contador visual de puntos */}
+            <span style={{ fontSize: '1rem', color: sumaActualPuntos === 100 ? '#0f0' : '#ff00ff' }}>
+              Pts: {sumaActualPuntos}/100
+            </span>
+          </h3>
+
+          <input className="neon-input-magenta" placeholder="¿Cómo dice la pregunta?" value={customPregunta} onChange={e => setCustomPregunta(e.target.value)} />
+
           {customRespuestas.map((r, i) => (
-            <div key={i} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
-              <input className="neon-input-magenta" placeholder={`Respuesta ${i+1}`} style={{ flex: 3 }}
+            <div key={i} style={{ display: 'flex', gap: '5px', marginTop: '8px' }}>
+              <input className="neon-input-magenta" placeholder={`Respuesta ${i+1}`} style={{ flex: 3 }} value={r.texto}
                      onChange={e => {
-                      const n = [...customRespuestas];
-                      n[i] = { ...n[i], texto: e.target.value.toUpperCase() };
-                      setCustomRespuestas(n);
-                    }} />
-              <input type="number" className="neon-input-magenta" placeholder="Pts" style={{ flex: 1 }}
-                     onChange={e => {
-                      const n = [...customRespuestas];
-                      n[i] = { ...n[i], puntos: parseInt(e.target.value) || 0 };
-                      setCustomRespuestas(n);
-                    }} />
+                       const copia = [...customRespuestas];
+                       copia[i] = { ...copia[i], texto: e.target.value.toUpperCase() };
+                       setCustomRespuestas(copia);
+                     }} />
+
+              {/* NUEVO: Conectado a la función Auto-Correctora */}
+              <input type="number" className="neon-input-magenta" placeholder="Pts" style={{ flex: 1, textAlign: 'center' }}
+                     value={r.puntos || ''}
+                     onChange={e => handlePuntosChange(i, e.target.value)} />
             </div>
           ))}
-          <button className="neon-btn" style={{ marginTop: '10px', width: '100%', fontSize: '0.8rem' }} onClick={agregarPersonalizada}>
+          
+          <button className="neon-btn" style={{ width: '100%', marginTop: '1rem' }} onClick={agregarPersonalizada}>
             AÑADIR A LA PARTIDA
           </button>
         </section>
 
-        {/* LADO DERECHO: BANCO Y RESUMEN */}
-        <section className="banco-section">
-          <h3 style={{ color: '#00f2ff' }}>3. Banco de Preguntas</h3>
-          <div className="banco-scroll" style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '1rem' }}>
-            {BANCO_PREGUNTAS.map(p => (
-              <div key={p.id} className="pregunta-item"
-                   style={{ border: `1px solid ${rondasSeleccionadas.find(r => r.id === p.id) ? '#00f2ff' : '#333'}`, padding: '8px', marginBottom: '5px', cursor: 'pointer' }}
-                   onClick={() => togglePreguntaBanco(p)}>
-                {p.pregunta}
-              </div>
-            ))}
+        {/* COLUMNA DERECHA: BANCO DE DYNAMO Y RESUMEN */}
+        <section>
+          <h3 className="cyan-text">3. Banco de Preguntas (DynamoDB)</h3>
+          <div className="banco-scroll" style={{ maxHeight: '250px', overflowY: 'auto', border: '1px solid #333', padding: '10px', borderRadius: '8px' }}>
+            {cargando ? (
+              <p style={{ textAlign: 'center', color: '#666' }}>Cargando datos del Docker...</p>
+            ) : bancoPreguntas.length === 0 ? (
+              <p style={{ textAlign: 'center', color: '#f00' }}>No se encontraron preguntas locales.</p>
+            ) : (
+              bancoPreguntas.map(p => {
+                const seleccionado = rondasSeleccionadas.find(r => r.id === p.id);
+                return (
+                  <div key={p.id} className="pregunta-item"
+                       onClick={() => togglePreguntaBanco(p)}
+                       style={{ 
+                         padding: '10px', border: `1px solid ${seleccionado ? '#00f2ff' : '#222'}`, 
+                         marginBottom: '8px', cursor: 'pointer', borderRadius: '5px',
+                         backgroundColor: seleccionado ? 'rgba(0, 242, 255, 0.1)' : 'transparent'
+                       }}>
+                    {p.pregunta}
+                  </div>
+                );
+              })
+            )}
           </div>
 
-          <h3 style={{ color: '#ff00ff' }}>Resumen: {rondasSeleccionadas.length} / {numRondas}</h3>
-          <div style={{ backgroundColor: '#111', padding: '10px', borderRadius: '5px', minHeight: '100px' }}>
+          <h3 className="magenta-text" style={{ marginTop: '2rem' }}>Resumen: {rondasSeleccionadas.length} / {numRondas}</h3>
+          <div style={{ minHeight: '80px', background: '#0a0a0a', padding: '10px', borderRadius: '8px' }}>
             {rondasSeleccionadas.map((r, i) => (
-              <div key={i} style={{ fontSize: '0.8rem', color: '#00f2ff' }}>R{i+1}: {r.pregunta}</div>
+              <div key={i} style={{ color: '#00f2ff', fontSize: '0.9rem' }}>• {r.pregunta}</div>
             ))}
           </div>
 
-          <button className="neon-btn start-btn" style={{ marginTop: '1.5rem', width: '100%' }} onClick={crearPartidaFinal}>
-            CREAR PARTIDA CON {numRondas} RONDAS
+          <button className="neon-btn start-btn" style={{ width: '100%', marginTop: '2rem', padding: '1.2rem' }} onClick={iniciarPartida}>
+            LANZAR PARTIDA
           </button>
         </section>
       </div>
