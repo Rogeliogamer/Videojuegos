@@ -554,6 +554,35 @@ html, body {
   margin-top: 2rem;
   animation: pulso 2s infinite;
 }
+/* ========================================================= */
+/*  Pantalla de Juego - Ingresa el PIN para unirte a la partida */
+/* ========================================================= */
+/* 1. Vista Normal (PC) - Uno al lado del otro */
+.pin-input-group {
+  display: flex;
+  flex-direction: row; 
+  gap: 15px;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.pin-input {
+  flex: 2;
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 5px;
+}
+
+.pin-btn {
+  flex: 1;
+  font-size: 1.1rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 
 /* ========================================================= */
 /* --- RESPONSIVIDAD: MÓVILES Y TABLETS (Máximo 768px) --- */
@@ -744,4 +773,28 @@ html, body {
   50% { transform: translateX(5px) rotate(5deg); }
   75% { transform: translateX(-5px) rotate(-5deg); }
   100% { transform: translateX(0); }
+}
+/* ========================================================= */
+/* DISEÑO RESPONSIVO
+   Pantalla de Juego - Ingresa el PIN para unirte a la partida */
+/* ========================================================= */
+/* 2. Vista Celular (Pantallas menores a 768px) - Apilados */
+@media (max-width: 768px) {
+  .pin-input-group {
+    flex-direction: column; /* Cambia la fila por una columna */
+    gap: 10px;
+  }
+
+  .pin-input, .pin-btn {
+    width: 100%;
+    flex: none; /* Anulamos las proporciones de PC */
+  }
+
+  .pin-input {
+    padding: 15px !important; /* Más espacio para escribir cómodo */
+  }
+
+  .pin-btn {
+    padding: 15px !important; /* Botón más alto para que sea fácil de tocar */
+  }
 }

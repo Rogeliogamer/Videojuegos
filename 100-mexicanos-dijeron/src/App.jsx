@@ -142,7 +142,7 @@ function LobbyPrincipal({ user, signOut }) {
           </p>
 
           {/* BOTÓN PARA UNIRSE A PARTIDA (Navega a la pantalla de unión de jugadores) */}
-          <button onClick={() => navigate('/votacion')} className="neon-btn join-btn">
+          <button onClick={() => navigate('/codigo')} className="neon-btn join-btn">
             Entrar a Jugar
           </button>
         </div>
@@ -432,46 +432,64 @@ function PantallaTablero() {
   );
 }
 
-// --- ACTUALIZACIÓN DE UNIÓN DE JUGADORES (UX MEJORADA) ---
-function PantallaVotacion() {
+/* ========================================================= */
+/* FUNCIONALIDAD DE UNIÓN DE JUGADORES (PANTALLA DE VOTACIÓN) */
+/* ========================================================= */
+function PantallaCodigo() {
+  // Para navegar a la sala de espera una vez que el Host arranque la partida
   const navigate = useNavigate();
 
+  // Estados para manejar la unión del jugador a la sala
   const [pinSala, setPinSala] = useState('');
   const [nombreJugador, setNombreJugador] = useState('');
   const [equipoElegido, setEquipoElegido] = useState('');
   const [infoSala, setInfoSala] = useState(null); // Para guardar nombres de equipos de la DB
   const [unido, setUnido] = useState(false);
 
-  // 1. BUSCADOR DE SALA EXPLÍCITO
+  // 1. BUSCAR LA SALA EN DYNAMODB Y MOSTRAR NOMBRES DE EQUIPOS
   const buscarSala = async () => {
+    // Validación básica del PIN antes de hacer la consulta
     if (pinSala.length !== 4) {
+      // Si el PIN no tiene exactamente 4 dígitos, mostramos una alerta y no hacemos la consulta
       alert("El PIN debe tener 4 dígitos.");
       return;
     }
+
+    // Si el PIN es válido, hacemos la consulta a DynamoDB para verificar si la sala existe y obtener su información (nombres de equipos)
     try {
+      // Usamos el GetCommand para buscar la sala por su PIN en la tabla "Partidas_100Mexicanos"
       const res = await docClient.send(new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala } }));
+      
+      // Si la sala existe, guardamos su información en el estado infoSala para mostrar los nombres de los equipos y permitir que el jugador elija a cuál unirse
       if (res.Item) {
+        // Si la sala existe, guardamos su información en el estado infoSala para mostrar los nombres de los equipos y permitir que el jugador elija a cuál unirse
         setInfoSala(res.Item);
       } else {
+        // Si la sala no existe, mostramos una alerta indicando que el PIN es incorrecto o la sala no fue encontrada
         alert("❌ Sala no encontrada. Revisa el PIN.");
       }
-    } catch (e) { 
+    } catch (e) {
+      // Si ocurre un error durante la consulta a DynamoDB, lo capturamos y mostramos una alerta indicando que hubo un error al buscar la sala, y también lo registramos en la consola para depuración
       console.error(e);
     }
   };
 
   // 2. UNIRSE AL EQUIPO Y ENTRAR A SALA DE ESPERA
   const handleUnirse = async (e) => {
+    // validación básica para evitar unirse sin elegir equipo o sin escribir nombre
     e.preventDefault(); // Evita que la página se recargue al enviar el formulario
 
+    // Validación básica para evitar unirse sin elegir equipo o sin escribir nombre
     if (!equipoElegido || !nombreJugador.trim()) {
       alert("Elige un equipo y escribe tu nombre.");
       return;
     }
 
+    // Antes de unir al jugador, hacemos una última consulta a DynamoDB para obtener la información más reciente de la sala, esto es importante para verificar que el equipo elegido no esté lleno (máx 5 jugadores por equipo)
     const equipoKey = equipoElegido === infoSala.equipoA.nombre ? 'equipoA' : 'equipoB';
     const jugadoresActuales = infoSala[equipoKey].jugadores || [];
 
+    // Si el equipo ya tiene 5 jugadores, mostramos una alerta indicando que el equipo está lleno y no permitimos que el jugador se una a ese equipo
     if (jugadoresActuales.length >= 5) {
       alert("Este equipo ya está lleno (Máx 5 jugadores).");
       return;
@@ -489,28 +507,34 @@ function PantallaVotacion() {
         }
       });
 
+      // Ejecutamos el comando para actualizar la sala en DynamoDB, agregando al nuevo jugador al equipo correspondiente
       await docClient.send(comandoUpdate);
 
       // ¡ÉXITO! Pasamos al estado de espera (NO saltamos al juego todavía)
       setUnido(true);
-      } catch (error) {
-        console.error(error);
-        alert("Error al unirse. Intenta de nuevo.");
-      }
-    };
+    } catch (error) {
+      console.error(error);
+      alert("Error al unirse. Intenta de nuevo.");
+    }
+  };
 
-    // 3. RADAR DE ESPERA (Vigila cuando el Host le da a Iniciar Partida)
-    useEffect(() => {
+  // 3. RADAR DE ESPERA (Vigila cuando el Host le da a Iniciar Partida)
+  useEffect(() => {
+    // Si el jugador no se ha unido aún, no activamos el radar de espera, ya que solo tiene sentido vigilar el estado de la sala después de que el jugador se ha unido y está esperando al Host
     if (!unido) return;
 
+    // Una vez que el jugador se ha unido, activamos un intervalo que cada 1.5 segundos hace una consulta a DynamoDB para verificar el estado actual de la sala (si el Host ya inició la partida cambiando el estado a "jugando")
     const vigilarEstado = setInterval(async () => {
       try {
+        // Hacemos una consulta a DynamoDB para obtener la información más reciente de la sala, específicamente el campo "estado" que el Host cambiará a "jugando" cuando inicie la partida
         const comando = new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala } });
         const res = await docClient.send(comando);
 
         // Si el Host ya cambió el semáforo a verde...
         if (res.Item && res.Item.estado === "jugando") {
+          // Detenemos el radar de espera, ya que el Host inició la partida y no necesitamos seguir vigilando
           console.log("¡El Host arrancó! Saltando...");
+
           // Ahora sí, hacemos el salto sincronizado llevando nuestros datos
           navigate('/juego-equipo', { state: { pinSala, nombreEquipo: equipoElegido, nombreJugador } });
         }
@@ -521,6 +545,28 @@ function PantallaVotacion() {
 
     return () => clearInterval(vigilarEstado);
   }, [unido, pinSala, equipoElegido, nombreJugador, navigate]);
+
+  // Autocargar el Nickname del jugador desde AWS Cognito
+  useEffect(() => {
+    // Al cargar el componente, hacemos una consulta a Cognito para obtener los atributos del usuario autenticado, específicamente el preferred_username que configuramos en el proceso de registro
+    const cargarNickname = async () => {
+      {/* fetchUserAttributes es una función de Amplify Auth que nos devuelve un objeto con todos los atributos del usuario, incluyendo el preferred_username que configuramos en el proceso de registro */}
+      try {
+        {/* Buscamos el preferred_username que configuramos en el registro */}
+        const atributos = await fetchUserAttributes();
+
+        {/* Si encontramos el preferred_username, lo pre-llenamos en el estado nombreJugador para que el usuario solo tenga que elegir su equipo y no escribir su nombre cada vez */}
+        if (atributos.preferred_username) {
+          // Pre-llenamos el estado con el nombre oficial del jugador
+          setNombreJugador(atributos.preferred_username);
+        }
+      } catch (error) {
+        {/* Si ocurre un error al obtener los atributos del usuario, lo capturamos y lo registramos en la consola para depuración, pero no bloqueamos la experiencia del usuario, ya que el nombre es opcional */}
+        console.error("Error al obtener el Nickname:", error);
+      }
+    };
+    cargarNickname();
+  }, []);
 
   // ==========================================
   // RENDERIZADO VISUAL
@@ -544,45 +590,81 @@ function PantallaVotacion() {
 
   // VISTA B: FORMULARIO DE INGRESO
   return (
-    <div className="equipo-container" style={{ justifyContent: 'flex-start', paddingTop: '2rem' }}>
-      <h2 className="magenta-title" style={{ textAlign: 'center', marginBottom: '2rem' }}>UNIRSE AL JUEGO</h2>
-      {/* PASO 1: INGRESAR PIN */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
-        <input 
-          className="neon-input-magenta" 
-          placeholder="PIN de 4 dígitos" 
-          maxLength={4} 
-          value={pinSala} 
-          onChange={e => setPinSala(e.target.value)}
-          style={{ flex: 2, textAlign: 'center', fontSize: '1.5rem', letterSpacing: '5px' }}
-        />
-        <button 
-          className="neon-btn start-btn" 
-          onClick={buscarSala}
-          style={{ flex: 1, padding: '0', fontSize: '1rem' }}
-        >
-          BUSCAR
-        </button>
-      </div>
+    // Contenedor principal para unirse al juego, con un diseño que resalta el proceso de búsqueda de sala y selección de equipo, utilizando colores neón y una estructura clara para guiar al usuario paso a paso
+    <div className="equipo-container" style={{ justifyContent: 'flex-start', paddingTop: '1rem', paddingBottom: '1rem', overflowY: 'auto'}}>
+      {/* TÍTULO PRINCIPAL */}
+      <h2 className="magenta-title" style={{ textAlign: 'center', marginBottom: '1rem' }}>UNIRSE AL JUEGO</h2>
+      
+      {/* ==========================================
+          PASO 1: INGRESAR PIN O MOSTRAR SALA ENCONTRADA
+          ========================================== */}
+      {!infoSala ? (
+        /* VISTA B.1: Buscador Activo (Solo se ve al inicio) */
+        <div className="pin-input-group">
+          {/* Campo de texto para ingresar el PIN de la sala, con un diseño neon y centrado */}
+          <input 
+            className="neon-input-magenta pin-input" 
+            placeholder="PIN de 4 dígitos" 
+            maxLength={4} 
+            value={pinSala} 
+            onChange={e => setPinSala(e.target.value)}
+          />
+          {/* Botón para buscar la sala, que activa la función de búsqueda y validación del PIN */}
+          <button 
+            className="neon-btn start-btn pin-btn" 
+            onClick={buscarSala}
+          >
+            BUSCAR
+          </button>
+        </div>
+      ) : (
+        /* VISTA B.2: Sala Encontrada (Bloquea la búsqueda y muestra estatus) */
+        <div style={{
+          backgroundColor: '#111', 
+          border: '2px solid #00f2ff', 
+          borderRadius: '10px', 
+          padding: '5px', 
+          marginBottom: '1rem', 
+          textAlign: 'center',
+          boxShadow: '0 0 15px rgba(0, 242, 255, 0.3)'
+        }}>
+          <span style={{ color: '#aaa', fontSize: '0.8rem' }}>Conectado a la Sala:</span>
+          <h2 style={{ color: '#00f2ff', margin: '2px 0 0 0', letterSpacing: '3px', fontSize: '1.5rem' }}>{pinSala}</h2>
+          
+          <button 
+            onClick={() => { setInfoSala(null); setPinSala(''); setEquipoElegido(''); }}
+            style={{
+              background: 'none', border: 'none', color: '#ff00ff', 
+              textDecoration: 'underline', marginTop: '5px', cursor: 'pointer', fontSize: '0.8rem'
+            }}
+          >
+            Cambiar de Sala
+          </button>
+        </div>
+      )}
 
-      {/* PASO 2: ELEGIR EQUIPO Y NOMBRE (Aparece solo si la sala existe) */}
+      {/* ==========================================
+          PASO 2: ELEGIR NOMBRE Y EQUIPO (Solo se ve si hay sala)
+          ========================================== */}
       {infoSala && (
+        // Contenedor para elegir equipo y nombre, con una animación de aparición suave y un diseño que resalta los colores de los equipos
         <div style={{ marginTop: '1rem', width: '100%', animation: 'fadeIn 0.5s' }}>
           <input 
             className="neon-input-magenta" 
             placeholder="Tu Nombre / Apodo" 
+            value={nombreJugador}
             onChange={e => setNombreJugador(e.target.value)} 
-            style={{ width: '100%', boxSizing: 'border-box', textAlign: 'center', marginBottom: '1.5rem' }}
+            style={{ width: '100%', boxSizing: 'border-box', textAlign: 'center', marginBottom: '0.5rem' }}
           />
 
-          <p style={{ color: '#00f2ff', textAlign: 'center', marginBottom: '1rem' }}>SELECCIONA TU BANDO:</p>
+          <p style={{ color: '#00f2ff', textAlign: 'center', marginBottom: '0.5rem', padding: '0.9rem' }}>SELECCIONA TU BANDO:</p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {/* BOTÓN EQUIPO A */}
             <button 
               onClick={() => setEquipoElegido(infoSala.equipoA.nombre)} 
               style={{ 
-                padding: '1rem', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s',
+                padding: '0.8rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s',
                 // Lógica de colores dinámicos
                 backgroundColor: equipoElegido === infoSala.equipoA.nombre ? '#00f2ff' : 'transparent',
                 color: equipoElegido === infoSala.equipoA.nombre ? '#000' : '#00f2ff',
@@ -597,7 +679,7 @@ function PantallaVotacion() {
             <button 
               onClick={() => setEquipoElegido(infoSala.equipoB.nombre)} 
               style={{ 
-                padding: '1rem', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s',
+                padding: '0.8rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s',
                 // Lógica de colores dinámicos (Magenta)
                 backgroundColor: equipoElegido === infoSala.equipoB.nombre ? '#ff00ff' : 'transparent',
                 color: equipoElegido === infoSala.equipoB.nombre ? '#000' : '#ff00ff',
@@ -608,9 +690,10 @@ function PantallaVotacion() {
               {infoSala.equipoB.nombre} ({infoSala.equipoB.jugadores ? infoSala.equipoB.jugadores.length : 0}/5)
             </button>
           </div>
+          
           <button 
             className="neon-btn start-btn" 
-            style={{ width: '100%', marginTop: '2rem', padding: '1.5rem', fontSize: '1.2rem' }} 
+            style={{ width: '100%', marginTop: '1rem', padding: '1rem', fontSize: '1.1rem' }} 
             onClick={handleUnirse}
           >
             ¡ENTRAR A LA SALA DE ESPERA!
@@ -1094,7 +1177,7 @@ function App() {
               {/* Ruta del Host */}
               <Route path="/tablero" element={<PantallaTablero />} />
               {/* Ruta de los Equipos */}
-              <Route path="/votacion" element={<PantallaVotacion />} />
+              <Route path="/codigo" element={<PantallaCodigo />} />
 
               {/* NUEVAS RUTAS DE LA FASE 4 */}
               <Route path="/juego-host" element={<PantallaJuegoHost />} />
