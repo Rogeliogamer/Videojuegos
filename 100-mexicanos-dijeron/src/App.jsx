@@ -1,6 +1,6 @@
 import { PutCommand, GetCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { docClient } from './dynamo';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Authenticator, translations } from '@aws-amplify/ui-react';
 import { I18n } from 'aws-amplify/utils'; // Si usas la versión más reciente (v6)
 // Nota: Si te marca error el renglón de arriba, cámbialo por: import { I18n } from 'aws-amplify';
@@ -335,7 +335,7 @@ function PantallaConfiguracion() {
                      onChange={e => handlePuntosChange(i, e.target.value)} />
             </div>
           ))}
-          
+
           <button className="neon-btn" style={{ width: '100%', marginTop: '1rem' }} onClick={agregarPersonalizada}>
             AÑADIR A LA PARTIDA
           </button>
@@ -393,37 +393,80 @@ function PantallaTablero() {
   const [pin, setPin] = useState('----');
   const [salaDB, setSalaDB] = useState(null); // Aquí guardaremos los datos en tiempo real
 
-  // 1. CREAR LA SALA CON LA NUEVA ESTRUCTURA
+  // NUEVO: Bandera para saber si nos vamos porque inició el juego o porque el usuario huyó
+  const juegoIniciado = useRef(false);
+  // NUEVO: Referencia del PIN para poder leerlo dentro del desmontaje (limpieza)
+  const pinActual = useRef('----');
+
+  // --- 1. FUNCIÓN PARA GENERAR PIN ÚNICO (Evita duplicados) ---
+  const generarPinUnico = async () => {
+    let pinGenerado = '';
+    let existe = true;
+
+    while (existe) {
+      pinGenerado = Math.floor(1000 + Math.random() * 9000).toString();
+      // Verificamos si ya existe en la DB
+      const check = await docClient.send(new GetCommand({
+        TableName: "Partidas_100Mexicanos",
+        Key: { pinSala: pinGenerado }
+      }));
+
+      if (!check.Item) existe = false; // Si no hay item, el PIN está libre
+    }
+    return pinGenerado;
+  };
+
+  // --- 1. CREACIÓN DE SALA Y PROTECCIÓN DE PESTAÑA ---
   useEffect(() => {
-    // Si alguien entra directo sin configurar, lo regresamos
     if (!config) { navigate('/config-ronda'); return; }
-
+    
     const crearSala = async () => {
-      const pinAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
-      setPin(pinAleatorio);
+      const nuevoPin = await generarPinUnico();
+      setPin(nuevoPin);
+      pinActual.current = nuevoPin; // Guardamos el PIN en la referencia
 
-      const comando = new PutCommand({
+      // Calculamos la hora límite: Hora actual + 4 horas de validez (en segundos)
+      const segundosActuales = Math.floor(Date.now() / 1000);
+      const horasDeVida = 4;
+      const tiempoExpiracion = segundosActuales + (horasDeVida * 60 * 60);
+
+      await docClient.send(new PutCommand({
         TableName: "Partidas_100Mexicanos",
         Item: {
-          pinSala: pinAleatorio,
+          pinSala: nuevoPin,
           estado: "esperando",
           equipoA: config.equipoA,
           equipoB: config.equipoB,
           rondas: config.rondas,
-          rondaActiva: config.rondas[0], // Pre-cargamos la ronda 1
+          rondaActiva: config.rondas[0],
           indiceRondaActual: 0,
-          puntajesGlobales: { [config.equipoA.nombre]: 0, [config.equipoB.nombre]: 0 }
+          puntajesGlobales: { [config.equipoA.nombre]: 0, [config.equipoB.nombre]: 0 },
+          ttlExpiracion: tiempoExpiracion
         }
-      });
-
-      try {
-        await docClient.send(comando);
-        console.log("📡 Mega-Sala registrada con PIN:", pinAleatorio);
-      } catch (error) {
-        console.error("❌ Error conectando con DynamoDB:", error);
-      }
+      }));
     };
     crearSala();
+
+    // NUEVO: Proteger si el usuario intenta cerrar la pestaña o recargar (F5)
+    const evitarCierreAccidental = (e) => {
+      e.preventDefault();
+      e.returnValue = ''; // Muestra el mensaje de advertencia del navegador
+    };
+    window.addEventListener('beforeunload', evitarCierreAccidental);
+
+    // NUEVO: AHORA SÍ, LA LIMPIEZA INTELIGENTE
+    return () => {
+      window.removeEventListener('beforeunload', evitarCierreAccidental);
+      // Solo borramos la base de datos si el componente se cerró SIN iniciar el juego
+      if (!juegoIniciado.current && pinActual.current !== '----') {
+        console.log("Detectado abandono de sala. Borrando PIN:", pinActual.current);
+        // Fire and forget (lo mandamos sin await porque la página ya se está cerrando)
+        docClient.send(new DeleteCommand({
+          TableName: "Partidas_100Mexicanos",
+          Key: { pinSala: pinActual.current }
+        })).catch(e => console.error("Error limpiando:", e));
+      }
+    };
   }, [config, navigate]);
 
   // 2. RADAR: VIGILAR QUIÉN SE UNE A QUÉ EQUIPO
@@ -442,16 +485,36 @@ function PantallaTablero() {
     return () => clearInterval(radar);
   }, [pin]);
 
-  // 3. GATILLO PARA INICIAR EL JUEGO
+  // --- 3. FUNCIÓN PARA CANCELAR Y BORRAR (Botón Volver) ---
+  const cancelarPartida = async () => {
+    if (window.confirm("¿Seguro que quieres cancelar la partida? Se borrará el código.")) {
+      try {
+        // Marcamos como "juego iniciado" para engañar a la limpieza automática y no hacer la petición doble
+        juegoIniciado.current = true;
+
+        await docClient.send(new DeleteCommand({
+          TableName: "Partidas_100Mexicanos",
+          Key: { pinSala: pin }
+        }));
+        navigate('/config-ronda')
+      } catch (error) {
+        console.error("Error al borrar:", error);
+      }
+    }
+  };
+
+  // 4. GATILLO PARA INICIAR EL JUEGO
   const iniciarJuego = async () => {
     try {
-      const comandoUpdate = new UpdateCommand({
+      // NUEVO: Levantamos la bandera antes de navegar para proteger la sala de la limpieza
+      juegoIniciado.current = true;
+
+      await docClient.send(new UpdateCommand({
         TableName: "Partidas_100Mexicanos",
         Key: { pinSala: pin },
         UpdateExpression: "SET estado = :nuevoEstado",
         ExpressionAttributeValues: { ":nuevoEstado": "jugando" }
-      });
-      await docClient.send(comandoUpdate);
+      }));
       navigate('/juego-host', { state: { pinSala: pin } });
     } catch (error) {
       console.error(error);
@@ -470,7 +533,7 @@ function PantallaTablero() {
   return (
     <div className="host-container sin-scroll" style={{ height: '90vh', justifyContent: 'flex-start', paddingTop: '1rem' }}>
       <header className="host-nav">
-        <button onClick={() => navigate('/config-ronda')} className="volver-btn">⬅ Cancelar Partida</button>
+        <button onClick={cancelarPartida} className="volver-btn">⬅ Cancelar y Borrar PIN</button>
         <span className="host-badge">MODO ADMINISTRADOR</span>
       </header>
 
