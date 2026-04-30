@@ -1117,9 +1117,11 @@ function PantallaJuegoEquipo() {
   
   const [ultimoProcesadoLocal, setUltimoProcesadoLocal] = useState(0); 
   const [idRondaActual, setIdRondaActual] = useState(''); 
-  
-  // AHORA GUARDAMOS TODOS LOS PUNTAJES PARA PODER COMPARARLOS AL FINAL
   const [puntajesGlobales, setPuntajesGlobales] = useState({});
+
+  // NUEVO: Estados para calcular los turnos localmente
+  const [jugadoresMiEquipo, setJugadoresMiEquipo] = useState([]);
+  const [respuestasBaseControl, setRespuestasBaseControl] = useState(0);
 
   // RADAR DEL JUGADOR
   useEffect(() => {
@@ -1129,6 +1131,15 @@ function PantallaJuegoEquipo() {
         const cmd = new GetCommand({ TableName: "Partidas_100Mexicanos", Key: { pinSala }});
         const res = await docClient.send(cmd);
         if (res.Item) {
+          
+          // NUEVO: Rescatamos a los jugadores de nuestro equipo para saber el orden
+          if (res.Item.equipoA && res.Item.equipoB) {
+            const miEq = res.Item.equipoA.nombre === nombreEquipo ? res.Item.equipoA : res.Item.equipoB;
+            const nuevosJugadores = miEq.jugadores || [];
+            // Evitamos re-renderizados innecesarios
+            setJugadoresMiEquipo(prev => prev.length === nuevosJugadores.length ? prev : nuevosJugadores);
+          }
+
           if (res.Item.rondaActiva) {
             setRonda(res.Item.rondaActiva);
             if (res.Item.rondaActiva.pregunta !== idRondaActual) {
@@ -1154,6 +1165,21 @@ function PantallaJuegoEquipo() {
     return () => clearInterval(radar);
   }, [pinSala, nombreEquipo, ultimoProcesadoLocal, idRondaActual]);
 
+  // NUEVO: Efecto que memoriza cuántas respuestas hubo en el cara a cara 
+  // para poder contar los turnos exactos en la fase de control.
+  // Usa localStorage por si el jugador recarga la página por error.
+  useEffect(() => {
+    if (!tablero) return;
+    if (tablero.fase === 'enfrentamiento') {
+      const procesadas = tablero.respuestasProcesadas || 0;
+      setRespuestasBaseControl(procesadas);
+      localStorage.setItem(`baseControl_${pinSala}`, procesadas.toString());
+    } else if (tablero.fase === 'control') {
+      const guardado = localStorage.getItem(`baseControl_${pinSala}`);
+      if (guardado) setRespuestasBaseControl(parseInt(guardado, 10));
+    }
+  }, [tablero.fase, tablero.respuestasProcesadas, pinSala]);
+
   const enviarRespuesta = async (e) => {
     e.preventDefault();
     if (!respuesta.trim()) return;
@@ -1170,7 +1196,7 @@ function PantallaJuegoEquipo() {
   if (!pinSala || !ronda) return <h2 className="magenta-title" style={{marginTop: '20vh'}}>Sincronizando...</h2>;
 
   // ==========================================
-  // PANTALLA DE VICTORIA (INTERCEPCIÓN DE FIN DE JUEGO)
+  // PANTALLA DE VICTORIA
   // ==========================================
   if (tablero.esFinDeJuego) {
     const equiposNombres = Object.keys(puntajesGlobales);
@@ -1183,28 +1209,20 @@ function PantallaJuegoEquipo() {
     let perdedor = eq2; let ptsPerdedor = pts2;
     let empate = false;
 
-    // Lógica para descubrir quién ganó
     if (pts2 > pts1) { ganador = eq2; ptsGanador = pts2; perdedor = eq1; ptsPerdedor = pts1; }
     else if (pts1 === pts2) { empate = true; }
 
     return (
       <div className="equipo-container sin-scroll" style={{ justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-        <h1 style={{ color: '#ffd700', fontSize: '3rem', animation: 'pulso 2s infinite', textShadow: '0 0 20px #ffd700', margin: 0 }}>
-          🏆 FIN DE PARTIDA 🏆
-        </h1>
-        
+        <h1 style={{ color: '#ffd700', fontSize: '3rem', animation: 'pulso 2s infinite', textShadow: '0 0 20px #ffd700', margin: 0 }}>🏆 FIN DE PARTIDA 🏆</h1>
         <div style={{ backgroundColor: '#111', padding: '2rem', borderRadius: '15px', border: '2px solid #ff00ff', marginTop: '3rem', boxShadow: '0 0 30px rgba(255, 0, 255, 0.3)' }}>
           {empate ? (
             <h2 style={{ color: '#00f2ff', fontSize: '2rem', margin: 0 }}>¡ES UN EMPATE!<br/><br/><span style={{fontSize: '3rem'}}>{ptsGanador} pts</span></h2>
           ) : (
             <>
-              <h2 style={{ color: '#00ff00', fontSize: '2.5rem', margin: '0 0 1rem 0', textShadow: '0 0 15px #00ff00' }}>
-                🥇 {ganador}<br/>{ptsGanador} pts
-              </h2>
+              <h2 style={{ color: '#00ff00', fontSize: '2.5rem', margin: '0 0 1rem 0', textShadow: '0 0 15px #00ff00' }}>🥇 {ganador}<br/>{ptsGanador} pts</h2>
               <hr style={{ borderColor: '#333', margin: '1.5rem 0' }} />
-              <h3 style={{ color: '#ff0000', fontSize: '1.5rem', margin: 0 }}>
-                💀 {perdedor}<br/>{ptsPerdedor} pts
-              </h3>
+              <h3 style={{ color: '#ff0000', fontSize: '1.5rem', margin: 0 }}>💀 {perdedor}<br/>{ptsPerdedor} pts</h3>
             </>
           )}
         </div>
@@ -1213,16 +1231,15 @@ function PantallaJuegoEquipo() {
   }
 
   // ==========================================
-  // PANTALLA NORMAL DE JUEGO
+  // PANTALLA NORMAL DE JUEGO Y MÁQUINA DE ESTADOS
   // ==========================================
   const puntosRonda = ronda.respuestas.reduce((total, resp, index) => tablero.reveladas[index] ? total + (resp.puntos || 0) : total, 0);
 
-  // MÁQUINA DE ESTADOS LOCAL
   let esMiTurno = false;
   let mensajeEstado = "";
+  const miNombreMayusculas = nombreJugador ? nombreJugador.toUpperCase() : '';
 
   if (tablero.fase === 'enfrentamiento') {
-    const miNombreMayusculas = nombreJugador ? nombreJugador.toUpperCase() : '';
     esMiTurno = (miNombreMayusculas === tablero.jugadorA || miNombreMayusculas === tablero.jugadorB);
 
     if (esMiTurno) {
@@ -1238,11 +1255,41 @@ function PantallaJuegoEquipo() {
     }
 
   } else if (tablero.fase === 'control') {
-    esMiTurno = (nombreEquipo === tablero.equipoControl);
-    mensajeEstado = esMiTurno ? "¡ES TURNO DE TU EQUIPO!" : `TURNO DE ${tablero.equipoControl}`;
+    // CORRECCIÓN INTELIGENTE DE TURNOS
+    if (nombreEquipo === tablero.equipoControl) {
+      if (jugadoresMiEquipo.length <= 1) {
+        esMiTurno = true; // Si está solo, siempre responde
+        mensajeEstado = enviado ? "Enviado. Esperando al Host..." : "¡ES TU TURNO DE RESPONDER!";
+      } else {
+        // 1. Encontrar quién fue el jugador de nuestro equipo en el cara a cara
+        const miCaraACara = jugadoresMiEquipo.find(j => j.toUpperCase() === tablero.jugadorA || j.toUpperCase() === tablero.jugadorB);
+        const indexCaraACara = miCaraACara ? jugadoresMiEquipo.findIndex(j => j.toUpperCase() === miCaraACara.toUpperCase()) : 0;
+        
+        // 2. Calcular los turnos exactos mediante matemáticas y el historial de respuestas
+        const turnosPasados = Math.max(0, tablero.respuestasProcesadas - respuestasBaseControl);
+        const indexActual = (indexCaraACara + 1 + turnosPasados) % jugadoresMiEquipo.length;
+        const jugadorEsperado = jugadoresMiEquipo[indexActual]?.toUpperCase();
+
+        esMiTurno = (miNombreMayusculas === jugadorEsperado);
+        
+        if (esMiTurno) {
+          mensajeEstado = enviado ? "Enviado. Esperando al Host..." : "¡ES TU TURNO DE RESPONDER!";
+        } else {
+          mensajeEstado = `ESPERA TU TURNO... (Le toca a: ${jugadorEsperado})`;
+        }
+      }
+    } else {
+      esMiTurno = false;
+      mensajeEstado = `TURNO DE ${tablero.equipoControl}`;
+    }
+
   } else if (tablero.fase === 'robo') {
     esMiTurno = (nombreEquipo !== tablero.equipoControl);
-    mensajeEstado = esMiTurno ? "🚨 ¡OPORTUNIDAD DE ROBO! 🚨" : "EL EQUIPO RIVAL INTENTA ROBAR...";
+    if (esMiTurno) {
+      mensajeEstado = enviado ? "Respuesta de robo enviada..." : "🚨 ¡OPORTUNIDAD DE ROBO! 🚨";
+    } else {
+      mensajeEstado = "EL EQUIPO RIVAL INTENTA ROBAR...";
+    }
   } else if (tablero.fase === 'resumen') {
     esMiTurno = false;
     mensajeEstado = "🏁 RONDA TERMINADA - ESPERANDO AL HOST 🏁";
@@ -1251,7 +1298,6 @@ function PantallaJuegoEquipo() {
   return (
     <div className="equipo-container sin-scroll" style={{ justifyContent: 'flex-start', paddingTop: '1rem', height: '100vh', paddingBottom: '2rem' }}>
       
-      {/* HEADER DE PUNTOS */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid #ff00ff', paddingBottom: '0.5rem' }}>
         <div style={{ textAlign: 'left' }}>
           <h3 style={{ color: '#00f2ff', margin: 0 }}>{nombreEquipo}</h3>
@@ -1260,26 +1306,20 @@ function PantallaJuegoEquipo() {
         <h3 style={{ color: '#ff00ff', margin: 0 }}>Ronda: {puntosRonda} pts</h3>
       </div>
 
-      {/* ¡LA PREGUNTA HA VUELTO! */}
       <div style={{ textAlign: 'center', marginBottom: '1rem', padding: '0 10px' }}>
-        <h2 style={{ color: '#fff', fontSize: '1.2rem', margin: 0, textShadow: '0 0 10px #00f2ff' }}>
-          {ronda.pregunta}
-        </h2>
+        <h2 style={{ color: '#fff', fontSize: '1.2rem', margin: 0, textShadow: '0 0 10px #00f2ff' }}>{ronda.pregunta}</h2>
       </div>
 
-      {/* CAJA DE MENSAJES DE ESTADO */}
       <div style={{ textAlign: 'center', marginBottom: '1rem', backgroundColor: esMiTurno ? '#0a2a0a' : '#2a0a0a', padding: '10px', borderRadius: '8px', border: `1px solid ${esMiTurno ? '#00ff00' : '#ff0000'}` }}>
         <h4 style={{ color: esMiTurno ? '#00ff00' : '#ff0000', margin: 0, animation: tablero.mensajeCaraACara ? 'pulso 1s infinite' : 'none' }}>
           {mensajeEstado}
         </h4>
       </div>
 
-      {/* STRIKES */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '5px', marginBottom: '1rem' }}>
         {[1, 2, 3].map(num => (<span key={num} style={{ fontSize: '1.5rem', color: num <= tablero.strikes ? '#ff0000' : '#333', fontWeight: 'bold' }}>X</span>))}
       </div>
 
-      {/* TABLERO CELULAR */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '2rem', flexGrow: 1, overflowY: 'auto' }} className="banco-scroll">
         {ronda.respuestas.map((resp, index) => {
           if (!resp.texto) return null;
@@ -1301,7 +1341,6 @@ function PantallaJuegoEquipo() {
         })}
       </div>
 
-      {/* FORMULARIO */}
       <form onSubmit={enviarRespuesta} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}>
         <input type="text" className="neon-input-magenta" placeholder={esMiTurno ? "Escribe aquí..." : "Espera tu turno..."}
           value={respuesta} onChange={(e) => setRespuesta(e.target.value)} disabled={enviado || !esMiTurno}
