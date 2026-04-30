@@ -1284,12 +1284,34 @@ function PantallaJuegoEquipo() {
     }
 
   } else if (tablero.fase === 'robo') {
-    esMiTurno = (nombreEquipo !== tablero.equipoControl);
-    if (esMiTurno) {
-      mensajeEstado = enviado ? "Respuesta de robo enviada..." : "🚨 ¡OPORTUNIDAD DE ROBO! 🚨";
+    // CORRECCIÓN: LÓGICA DE TURNO PARA EL ROBO
+    if (nombreEquipo !== tablero.equipoControl) {
+      if (jugadoresMiEquipo.length <= 1) {
+        esMiTurno = true;
+        mensajeEstado = enviado ? "Respuesta de robo enviada..." : "🚨 ¡TE TOCA ROBAR LOS PUNTOS! 🚨";
+      } else {
+        // 1. Encontramos quién fue nuestro jugador en el cara a cara inicial
+        const miCaraACara = jugadoresMiEquipo.find(j => j.toUpperCase() === tablero.jugadorA || j.toUpperCase() === tablero.jugadorB);
+        const indexCaraACara = miCaraACara ? jugadoresMiEquipo.findIndex(j => j.toUpperCase() === miCaraACara.toUpperCase()) : 0;
+
+        // 2. Calculamos el siguiente (sin sumar turnosPasados, porque no jugamos la fase de control)
+        const indexRobo = (indexCaraACara + 1) % jugadoresMiEquipo.length;
+        const jugadorEsperado = jugadoresMiEquipo[indexRobo]?.toUpperCase();
+
+        esMiTurno = (miNombreMayusculas === jugadorEsperado);
+
+        if (esMiTurno) {
+          mensajeEstado = enviado ? "Respuesta enviada..." : "🚨 ¡TE TOCA ROBAR LOS PUNTOS! 🚨";
+        } else {
+          mensajeEstado = `OPORTUNIDAD DE ROBO (Responde: ${jugadorEsperado})`;
+        }
+      }
     } else {
+      // El equipo que perdió el control por 3 strikes solo observa
+      esMiTurno = false;
       mensajeEstado = "EL EQUIPO RIVAL INTENTA ROBAR...";
     }
+    
   } else if (tablero.fase === 'resumen') {
     esMiTurno = false;
     mensajeEstado = "🏁 RONDA TERMINADA - ESPERANDO AL HOST 🏁";
