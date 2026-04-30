@@ -856,6 +856,26 @@ function PantallaCodigo() {
   );
 }
 
+// ===================================================================
+// NUEVO: HELPER NLP (Lenguaje Natural)
+// Lo ponemos fuera del componente para que no se recree en cada render
+// ===================================================================
+const evaluarRespuesta = (inputUsuario, respuestaBaseDeDatos) => {
+  if (!inputUsuario || !respuestaBaseDeDatos) return false;
+
+  const limpiarTexto = (texto) => {
+    return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+  };
+
+  const inputLimpio = limpiarTexto(inputUsuario);
+  const dbLimpio = limpiarTexto(respuestaBaseDeDatos);
+
+  if (inputLimpio === dbLimpio) return true;
+  if (inputLimpio.length >= 3 && dbLimpio.includes(inputLimpio)) return true;
+
+  return false;
+};
+
 // --- COMPONENTE 4: TABLERO ACTIVO (Host) ---
 function PantallaJuegoHost() {
   const navigate = useNavigate();
@@ -929,8 +949,16 @@ function PantallaJuegoHost() {
         if (res.Item && res.Item.intentoAdivinar) {
           const { equipo, texto } = res.Item.intentoAdivinar;
           let aciertoIndex = -1;
+
+          // ===================================================================
+          // NUEVO: Evaluación Inteligente de Respuestas
+          // ===================================================================
           ronda.respuestas.forEach((resp, index) => {
-            if (resp.texto && resp.texto.trim().toUpperCase() === texto && !reveladas[index]) aciertoIndex = index;
+            if (resp.texto && !reveladas[index]) {
+              if (evaluarRespuesta(texto, resp.texto)) {
+                aciertoIndex = index;
+              }
+            }
           });
           
           if (fase === 'enfrentamiento') {
@@ -1079,10 +1107,13 @@ function PantallaJuegoHost() {
           if (!resp.texto) return null; 
           const revelada = reveladas[index];
           const mostrarFaltante = fase === 'resumen' && !revelada; 
-
+          
           return (
-            <div key={index} className={`casilla-respuesta ${revelada || mostrarFaltante ? 'revelada' : 'oculta'}`} 
-                 style={mostrarFaltante ? { backgroundColor: '#330033', borderColor: '#555', boxShadow: 'none' } : {}}>
+            <div 
+              key={index} 
+              className={`casilla-respuesta ${revelada || mostrarFaltante ? 'revelada' : 'oculta'}`} 
+              style={mostrarFaltante ? { backgroundColor: '#330033', borderColor: '#555', boxShadow: 'none' } : { cursor: 'pointer' }}
+            >
               <div className="casilla-frente"><span className="casilla-numero">{index + 1}</span></div>
               <div className="casilla-dorso" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: '0 2rem' }}>
                 <span className="respuesta-texto" style={mostrarFaltante ? { color: '#aaa', textShadow: 'none' } : {}}>{resp.texto}</span>
@@ -1311,7 +1342,7 @@ function PantallaJuegoEquipo() {
       esMiTurno = false;
       mensajeEstado = "EL EQUIPO RIVAL INTENTA ROBAR...";
     }
-    
+
   } else if (tablero.fase === 'resumen') {
     esMiTurno = false;
     mensajeEstado = "🏁 RONDA TERMINADA - ESPERANDO AL HOST 🏁";
