@@ -329,7 +329,7 @@ function PantallaConfiguracion() {
                        setCustomRespuestas(copia);
                      }} />
 
-              {/* NUEVO: Conectado a la función Auto-Correctora */}
+              {/* NUEVO: Conectado a la función Auto-Corrector */}
               <input type="number" className="neon-input-magenta" placeholder="Pts" style={{ flex: 1, textAlign: 'center' }}
                      value={r.puntos || ''}
                      onChange={e => handlePuntosChange(i, e.target.value)} />
@@ -1138,7 +1138,7 @@ function PantallaJuegoHost() {
 // --- COMPONENTE 5: ZONA DE RESPUESTAS (Equipo) ---
 function PantallaJuegoEquipo() {
   const location = useLocation();
-  const { pinSala, nombreEquipo, nombreJugador } = location.state || {};
+  const {pinSala, nombreEquipo, nombreJugador } = location.state || {};
   
   const [ronda, setRonda] = useState(null);
   const [tablero, setTablero] = useState({ reveladas: [], strikes: 0, fase: 'enfrentamiento', equipoControl: null, jugadorA: '', jugadorB: '', mensajeCaraACara: '', respuestasProcesadas: 0, esFinDeJuego: false });
